@@ -1,0 +1,25 @@
+<html>
+<script>
+function updateImages() {
+    var idx;
+    for (idx = 0; idx < 4; idx++) {
+       name = "img_" + idx;                 
+       img = document.getElementById(name);
+       if (img and img.complete) {
+          img.src = temp+"?" + new Date().getTime();
+       }
+    }
+  setTimeout(updateImages, 200);
+};
+</script>
+<body onload="updateImage();">
+<h1> Image 0 </h1> 
+<img id="img_0" src="http://127.0.0.1:8081/0"/>
+<h1> Image 1 </h1> 
+<img id="img_1" src="http://127.0.0.1:8081/1"/>
+<h1> Image 2 </h1> 
+<img id="img_2" src="http://127.0.0.1:8081/2"/>
+<h1> Image 3 </h1> 
+<img id="img_3" src="http://127.0.0.1:8081/3"/>
+</body>
+</html>
