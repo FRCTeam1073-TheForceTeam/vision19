@@ -6,7 +6,8 @@ function updateImages() {
        name = "img_" + idx;                 
        img = document.getElementById(name);
        if (img and img.complete) {
-          img.src = temp+"?" + new Date().getTime();
+          newsrc = img.src.split('?')[0]
+          img.src = newsrc + "?" + new Date().getTime();
        }
     }
   setTimeout(updateImages, 200);
