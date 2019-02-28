@@ -2,7 +2,7 @@
 <script>
 function updateImages() {
     var idx;
-    for (idx = 0; idx < 4; idx++) {
+    for (idx = 0; idx < 5; idx++) {
        name = "img_" + idx;                 
        img = document.getElementById(name);
        if (img && img.complete) {
@@ -10,7 +10,7 @@ function updateImages() {
           img.src = newsrc + "?" + new Date().getTime();
        }
     }
-  setTimeout(updateImages, 200);
+  setTimeout(updateImages, 100);
 };
 
 window.onload = updateImages();
@@ -24,5 +24,7 @@ window.onload = updateImages();
 <img id="img_2" src="http://127.0.0.1:8081/2"/>
 <h1> Image 3 </h1> 
 <img id="img_3" src="http://127.0.0.1:8081/3"/>
+<h1> Image 4 </h1> 
+<img id="img_4" src="http://127.0.0.1:8081/4"/>
 </body>
 </html>
