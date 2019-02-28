@@ -11,8 +11,10 @@ function updateImages() {
     }
   setTimeout(updateImages, 200);
 };
+
+window.onload = updateImages();
 </script>
-<body onload="updateImage();">
+<body>
 <h1> Image 0 </h1> 
 <img id="img_0" src="http://127.0.0.1:8081/0"/>
 <h1> Image 1 </h1> 
