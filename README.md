@@ -15,7 +15,7 @@
 		- cam_#_mode       displayed as a string, can be "blob" or "line" and dictates the structure of the array in later bits
         	- cam_#_frame      a coutner that will run constantly
 		- cam_#_status	   string, the feedback for the driver station (aka "this camera died, this one caught on fire, and this camera never, calls me; one may think of it as the Jewish Mother of the cameras, if you will)
-		- cam_#_lineseg    number array   [x1, y1, x2, y2, score]   <-- "n" number of times 
+		- cam_#_lineseg    number array   [rho, x1, magnitude, theta, x2, y2, y1, length]   <-- "n" number of times 
 		- cam_#_blobs      number array   [cx, cy, width, height, pixels]  <-- "n" number of times
 		- cam_#_?(etc.)    number array   [ ~~fill~in~the~blank~~]  <-- "n" number of times
 
@@ -31,3 +31,20 @@ endOfFrame '{"end": 0}'.
 
 example packet from openmv: bytearray(b'{"x":0, "y":0, "w":319, "h":239, "pixels":22589, "cx":122, "cy":111, "rotation":1.326613, "code":1, "count":6}')
 
+imports (from all programs):
+    -from cameramanager import CameraManager
+    -from networktables import NetworkTables
+    -time
+    -sys
+    -io
+    -os
+    -http.server
+    -threading
+    -from PIL import Image
+    -struct
+    -serial
+    -platform
+    -numpy as np
+    -sensor
+    -pyb
+    
