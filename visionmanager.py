@@ -22,7 +22,7 @@ def give_script(mode):
                 return "./openmv/video.py"
         elif mode == "learncolor":
                 return "./openmv/learncolor.py"
-                
+
 def set_mode(cam, mode):
         script = ""
         with open(give_script(mode), 'r') as fin:
@@ -37,7 +37,7 @@ def set_mode(cam, mode):
 cam = []
 
 class ImageHandler(http.server.BaseHTTPRequestHandler):
-        
+
         def do_GET(self):
                 global cam
                 try:
@@ -136,7 +136,7 @@ while True:
                         if cam_mode[ci] == "lines":
                                 data = []
                                 for line in cam[ci].data:
-                                        print(line)
+                                        #print(line)
                                         data.append(line["x1"])
                                         data.append(line["y1"])
                                         data.append(line["x2"])
@@ -144,7 +144,7 @@ while True:
                                         data.append(line["magnitude"])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, data)
                                 nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
-                        
+
                         elif cam_mode[ci] == "blobs":
                                 data = []
                                 for blob in cam[ci].data:
@@ -155,26 +155,25 @@ while True:
                                         data.append(blob["pixels"])
                                 nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                        
+
                         elif cam_mode[ci] == "video":
                                 data = []
                                 nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-        
+
                         elif cam_mode[ci] == "learncolor":
                                 data = []
                                 nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                                
+
                 nt.putString("cam_%d_status" %cam[ci].cam, "ok")
                 nt.putNumber("cam_%d_frame" %cam[ci].cam, cam_frame[ci])
                 nt.putNumber("cam_%d_width" %cam[ci].cam, cam[ci].width)
                 nt.putNumber("cam_%d_height" %cam[ci].cam, cam[ci].height)
-        
+
                 newmode = nt.getString("cam_%d_mode" %cam[ci].cam, cam_mode[ci])
                 if newmode != cam_mode[ci]:
                         cam_mode[ci] = newmode
                         set_mode(cam[ci], cam_mode[ci])
-                
 
                 cam[ci].fb_update()
