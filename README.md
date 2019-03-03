@@ -14,9 +14,10 @@
 
 		- cam_#_mode       displayed as a string, can be "blob" or "line" and dictates the structure of the array in later bits
         	- cam_#_frame      a coutner that will run constantly
-		- cam_#_status	   string, the feedback for the driver station (aka "this camera died, this one caught on fire, and this camera never, calls me; one may think of it as the Jewish Mother of the cameras, if you will)
+		- cam_#_status	   string, the feedback for the driver station (aka "this camera died, this one caught on fire, and this camera never, calls me")
 		- cam_#_lineseg    number array   [x1, y1, x2, y2, score]   <-- "n" number of times 
-		- cam_#_blobs      number array   [cx, cy, width, height, pixels]  <-- "n" number of times
+		- cam_#_hatch      number array   [cx, cy, width, height, pixels, color]  <-- "n" number of times
+		- cam_#_cargo      number array   [cx, cy, width, height, pixels, color]  <-- "n" number of times
 		- cam_#_?(etc.)    number array   [ ~~fill~in~the~blank~~]  <-- "n" number of times
 
 	- inputs: cam_mode

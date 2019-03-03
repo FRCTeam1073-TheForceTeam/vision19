@@ -16,12 +16,14 @@ from PIL import Image
 def give_script(mode):
         if mode == "lines":
                 return "./openmv/lineSegProcessing.py"
-        elif mode == "blobs":
-                return "./openmv/blobs.py"
+        elif mode == "cargo":
+                return "./openmv/cargo.py"
         elif mode == "video":
                 return "./openmv/video.py"
         elif mode == "learncolor":
                 return "./openmv/learncolor.py"
+        elif mode == "hatch":
+                return "./openmv/hatchfinder.py"
                 
 def set_mode(cam, mode):
         script = ""
@@ -60,16 +62,22 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                         camnum = basepath[0]
                         ci = int(camnum[1])
 
-                        if ci >= 0 and ci < len(cam):
+                        if ci >= 0:
                                 imgData = io.BytesIO()
-                                cam[ci].get_image(imgData)
-                                self.send_response(200)
+                                for jj in range(0, len(cam)):
+                                        if cam[jj].cam == ci:
+                                                cam[jj].get_image(imgData)
+                                                self.send_response(200)
         
-                                self.send_header('Content-Type','image/jpeg')
-                                self.send_header('Content-Length', imgData.tell())
-                                self.send_header('Cache Control', 'no-cache')
-                                self.end_headers()
-                                self.wfile.write(imgData.getvalue())
+                                                self.send_header('Content-Type','image/jpeg')
+                                                self.send_header('Content-Length', imgData.tell())
+                                                self.send_header('Cache Control', 'no-cache')
+                                                self.end_headers()
+                                                self.wfile.write(imgData.getvalue())
+                                                return
+                                                
+                                self.send_response(404)
+
                                 
                         return
                 except:
@@ -92,9 +100,13 @@ for ii in range(0, 8):
         name = "/dev/ttyACM%d" % ii
         if os.path.exists(name):
                 cam_names.append(name)
-                
+
 print("STARTING CAMERA DEVICES:")
 print(cam_names)
+if len(cam) == 0:
+        print("No Cameras")
+        exit
+        
 
 # Create all our camera managers and set default modes
 for name in cam_names:
@@ -136,16 +148,16 @@ while True:
                         if cam_mode[ci] == "lines":
                                 data = []
                                 for line in cam[ci].data:
-                                        print(line)
                                         data.append(line["x1"])
                                         data.append(line["y1"])
                                         data.append(line["x2"])
                                         data.append(line["y2"])
                                         data.append(line["magnitude"])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, data)
-                                nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
                         
-                        elif cam_mode[ci] == "blobs":
+                        elif cam_mode[ci] == "cargo":
                                 data = []
                                 for blob in cam[ci].data:
                                         data.append(blob["cx"])
@@ -153,18 +165,39 @@ while True:
                                         data.append(blob["w"])
                                         data.append(blob["h"])
                                         data.append(blob["pixels"])
-                                nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
+                                        data.append(blob["color"])
+                                nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, data)
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
+
                         
                         elif cam_mode[ci] == "video":
                                 data = []
-                                nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
+
         
                         elif cam_mode[ci] == "learncolor":
                                 data = []
-                                nt.putNumberArray("cam_%d_blobs" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
+
+
+                        elif cam_mode[ci] == "hatch":
+                                data = []
+                                for blob in cam[ci].data:
+                                        data.append(blob["cx"])
+                                        data.append(blob["cy"])
+                                        data.append(blob["w"])
+                                        data.append(blob["h"])
+                                        data.append(blob["pixels"])
+                                        data.append(blob["color"])
+                                nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, data)
+                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
+
                                 
                 nt.putString("cam_%d_status" %cam[ci].cam, "ok")
                 nt.putNumber("cam_%d_frame" %cam[ci].cam, cam_frame[ci])

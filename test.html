@@ -10,7 +10,7 @@ function updateImages() {
           img.src = newsrc + "?" + new Date().getTime();
        }
     }
-  setTimeout(updateImages, 100);
+  setTimeout(updateImages, 50);
 };
 
 window.onload = updateImages();

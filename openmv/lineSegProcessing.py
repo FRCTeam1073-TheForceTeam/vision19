@@ -80,7 +80,7 @@ while(True):
     if enable_lens_corr: img.lens_corr(1.8) # for 2.8mm lens...
 
     # Locate blobs to create a set of ROIs to use for line searching:
-    blobs = img.find_blobs(thresh, pixels_threshold=50, area_threshold=90,
+    blobs = img.find_blobs(thresh, pixels_threshold=45, area_threshold=75,
                            merge=False, margin=10)
 
 
@@ -103,11 +103,11 @@ while(True):
     for b in blobs:
  #       img.draw_rectangle(b.rect(), color=(0,80,0))
         if b.area() < 1700:
-           #img.draw_rectangle(b.rect(), color=(90,0,0))
            roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
+           #img.draw_rectangle(b.rect(), color=(90,0,0))
            segs = img.find_line_segments(roi=roi, merge_distance = 1, max_theta_diff = 5)
            for seg in segs:
-               if  seg.length() > 30:
+               if  seg.length() > 20:
                    linesegs.append(seg)
 
     for l in linesegs:
