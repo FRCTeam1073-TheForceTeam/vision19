@@ -39,7 +39,7 @@ def set_mode(cam, mode):
 cam = []
 
 class ImageHandler(http.server.BaseHTTPRequestHandler):
-        
+
         def do_GET(self):
                 global cam
                 try:
@@ -158,6 +158,7 @@ while True:
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
                         
                         elif cam_mode[ci] == "cargo":
+
                                 data = []
                                 for blob in cam[ci].data:
                                         data.append(blob["cx"])
@@ -170,14 +171,12 @@ while True:
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
 
-                        
                         elif cam_mode[ci] == "video":
                                 data = []
                                 nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
 
-        
                         elif cam_mode[ci] == "learncolor":
                                 data = []
                                 nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
@@ -198,16 +197,14 @@ while True:
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, data)
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
 
-                                
                 nt.putString("cam_%d_status" %cam[ci].cam, "ok")
                 nt.putNumber("cam_%d_frame" %cam[ci].cam, cam_frame[ci])
                 nt.putNumber("cam_%d_width" %cam[ci].cam, cam[ci].width)
                 nt.putNumber("cam_%d_height" %cam[ci].cam, cam[ci].height)
-        
+
                 newmode = nt.getString("cam_%d_mode" %cam[ci].cam, cam_mode[ci])
                 if newmode != cam_mode[ci]:
                         cam_mode[ci] = newmode
                         set_mode(cam[ci], cam_mode[ci])
-                
 
                 cam[ci].fb_update()

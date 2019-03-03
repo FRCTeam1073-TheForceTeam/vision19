@@ -84,13 +84,15 @@ while(True):
                            merge=False, margin=10)
 
 
-    # `merge_distance` controls the merging of nearby lines. At 0 (the default), no
-    # merging is done. At 1, any line 1 pixel away from another is merged... and so
-    # on as you increase this value. You may wish to merge lines as line segment
-    # detection produces a lot of line segment results.
+    # `merge_distance` controls the merging of nerby lines. At 0 (the
+    # default), no merging is done. At 1, any line 1 pixel away from
+    # another is merged... and so on as you increase this value. You
+    # may wish to merge lines as line segment detection produces a lot
+    # of line segment results.
 
-    # `max_theta_diff` controls the maximum amount of rotation difference between
-    # any two lines about to be merged. The default setting allows for 15 degrees.
+    # `max_theta_diff` controls the maximum amount of rotation
+    # difference between any two lines about to be merged. The default
+    # setting allows for 15 degrees.
     linesegs = []
     if counter < 10:
         counter = counter + 1
@@ -101,7 +103,7 @@ while(True):
         counter = 0
 
     for b in blobs:
- #       img.draw_rectangle(b.rect(), color=(0,80,0))
+        #img.draw_rectangle(b.rect(), color=(0,80,0))
         if b.area() < 1700:
            roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
            #img.draw_rectangle(b.rect(), color=(90,0,0))
