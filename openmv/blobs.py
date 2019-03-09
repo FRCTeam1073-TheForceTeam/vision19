@@ -26,10 +26,34 @@ clock = time.clock()
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
 led1.off()
-	
-# Read color thresholds from file if possible:
 
-#threshold = [50, 50, 0, 0, 0, 0]
+
+def adjustBrightness(img):
+    #print("adjust")
+    stats = img.get_statistics()
+    exposure = sensor.get_exposure_us()
+    gain = sensor.get_gain_db()
+
+    if stats.l_mean() < 45:
+        exposure = exposure + 200
+    elif stats.l_mean() > 75:
+        exposure = exposure - 200
+
+    if exposure > 33000:
+        gain = gain + 1
+        exposure = 20000
+    elif exposure < 8000:
+        gain = gain - 1
+        exposure = 30000
+
+    if gain < 1:
+        gain = 1
+    elif gain > 16:
+        gain = 16
+
+    sensor.set_auto_exposure(False, exposure)
+    sensor.set_auto_gain(False, gain)
+
 thresh = []
 
 datafile = open("color.dat","r")
@@ -38,20 +62,21 @@ for l in datafile.readlines():
                 thresh.append(int(l))
         except:
                 pass
-        
-datafile.close()
-	
-while(True):
-	clock.tick()
-	img = sensor.snapshot()
-	startOfPacket["time"] = pyb.elapsed_millis(0)
-	print(startOfPacket)
 
-	for blob in img.find_blobs([thresh], pixels_threshold=100, area_threshold=100, merge=True, margin=10):
+datafile.close()
+
+while(True):
+    clock.tick()
+    img = sensor.snapshot()
+    adjustBrightness(img)
+    startOfPacket["time"] = pyb.elapsed_millis(0)
+    print(startOfPacket)
+
+    for blob in img.find_blobs([thresh], pixels_threshold=100, area_threshold=100, merge=True, margin=10):
                 img.draw_rectangle(blob.rect())
                 img.draw_cross(blob.cx(), blob.cy())
                 print(blob)
-    	print(endOfPacket)
+                print(endOfPacket)
 
 
 

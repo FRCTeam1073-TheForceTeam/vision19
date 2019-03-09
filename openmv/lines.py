@@ -35,11 +35,40 @@ max_degree = 179
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
 
+def adjustBrightness(img):
+    #print("adjust")
+    stats = img.get_statistics()
+    exposure = sensor.get_exposure_us()
+    gain = sensor.get_gain_db()
+
+    if stats.l_mean() < 45:
+        exposure = exposure + 200
+    elif stats.l_mean() > 75:
+        exposure = exposure - 200
+
+    if exposure > 33000:
+        gain = gain + 1
+        exposure = 20000
+    elif exposure < 8000:
+        gain = gain - 1
+        exposure = 30000
+
+    if gain < 1:
+        gain = 1
+    elif gain > 16:
+        gain = 16
+
+    sensor.set_auto_exposure(False, exposure)
+    sensor.set_auto_gain(False, gain)
+
+
 while(True):
     clock.tick()
     img = sensor.snapshot()
+    adjustBrightness(img)
+
     if enable_lens_corr: img.lens_corr(1.8) # for 2.8mm lens...
-	
+
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
 

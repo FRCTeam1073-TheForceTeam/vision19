@@ -77,6 +77,7 @@ while(True):
     print(startOfPacket)
     clock.tick()
     img = sensor.snapshot()
+    adjustBrightness(img)
     if enable_lens_corr: img.lens_corr(1.8) # for 2.8mm lens...
 
     # Locate blobs to create a set of ROIs to use for line searching:

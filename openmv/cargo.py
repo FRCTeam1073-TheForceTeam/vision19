@@ -16,21 +16,76 @@ file = open("camId.txt")
 cam = int(file.readline())
 file.close()
 sensor.reset()
+fmt = sensor.RGB565
+res = sensor.QQVGA
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
-led1.on()
-sensor.skip_frames(time = 1500)
+sensor.skip_frames(time = 2000)
 sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
-clock = time.clock()
+blobPacket = {"cx": 0, "cy": 0, "w": 0, "h": 0, "pixels": 0,"color": 0}
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
+clock = time.clock()
 led1.off()
-	
-# Read color thresholds from file if possible:
 
-#threshold = [50, 50, 0, 0, 0, 0]
-thresh = []
+
+def adjustBrightness(img):
+    #print("adjust")
+    stats = img.get_statistics()
+    exposure = sensor.get_exposure_us()
+    gain = sensor.get_gain_db()
+
+    if stats.l_mean() < 45:
+        exposure = exposure + 200
+    elif stats.l_mean() > 75:
+        exposure = exposure - 200
+
+    if exposure > 33000:
+        gain = gain + 1
+        exposure = 20000
+    elif exposure < 8000:
+        gain = gain - 1
+        exposure = 30000
+
+    if gain < 1:
+        gain = 1
+    elif gain > 16:
+        gain = 16
+
+    sensor.set_auto_exposure(False, exposure)
+    sensor.set_auto_gain(False, gain)
+    #print("lmean = %f" % stats.l_mean())
+    #print("gain = %f" % gain)
+    #print("exposure = %d" % exposure)def adjustBrightness(img):
+    #print("adjust")
+    stats = img.get_statistics()
+    exposure = sensor.get_exposure_us()
+    gain = sensor.get_gain_db()
+
+    if stats.l_mean() < 45:
+        exposure = exposure + 200
+    elif stats.l_mean() > 75:
+        exposure = exposure - 200
+
+    if exposure > 33000:
+        gain = gain + 1
+        exposure = 20000
+    elif exposure < 8000:
+        gain = gain - 1
+        exposure = 30000
+
+    if gain < 1:
+        gain = 1
+    elif gain > 16:
+        gain = 16
+
+    sensor.set_auto_exposure(False, exposure)
+    sensor.set_auto_gain(False, gain)
+
+
+
+threshold = [15, 65, 20, 50, 25, 70]
 
 datafile = open("color.dat","r")
 for l in datafile.readlines():
@@ -38,20 +93,31 @@ for l in datafile.readlines():
                 thresh.append(int(l))
         except:
                 pass
-        
-datafile.close()
-	
-while(True):
-	clock.tick()
-	img = sensor.snapshot()
-	startOfPacket["time"] = pyb.elapsed_millis(0)
-	print(startOfPacket)
 
-	for blob in img.find_blobs([thresh], pixels_threshold=100, area_threshold=100, merge=True, margin=10):
-                img.draw_rectangle(blob.rect())
-                img.draw_cross(blob.cx(), blob.cy())
-                print(blob)
-    	print(endOfPacket)
+datafile.close()
+
+while(True):
+    startOfPacket["time"] = pyb.elapsed_millis(0)
+    print(startOfPacket)
+    clock.tick()
+    img = sensor.snapshot()
+    adjustBrightness(img)
+
+
+    for blob in img.find_blobs([threshold], pixels_threshold=100, area_threshold=100, merge=True, margin=10):
+                if blob.h() > 0:
+                        ratio = blob.w() / blob.h()
+                        if ratio > 0.9 and ratio < 1.1:
+                                img.draw_rectangle(blob.rect())
+                                blobPacket["cx"] = blob.cx()
+                                blobPacket["cy"] = blob.cy()
+                                blobPacket["w"] = blob.w()
+                                blobPacket["h"] = blob.h()
+                                blobPacket["pixels"] = blob.pixels()
+                                blobPacket["color"] = 2
+                                print(blobPacket)
+
+    print(endOfPacket)
 
 
 

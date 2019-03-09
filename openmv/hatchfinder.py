@@ -76,14 +76,16 @@ def adjustBrightness(img):
     sensor.set_auto_exposure(False, exposure)
     sensor.set_auto_gain(False, gain)
 
-threshold1 = [50,  78, -5, 5, 40, 60] # Yellow LAB values
-threshold2 = [45, 60, 40, 60, 40, 60] # Yellow LAB values
+threshold1 = [35,  65, -15, 15, 20, 80] # Yellow LAB values
+threshold2 = [0, 45, 30, 60, 30, 60] # Orange LAB values
 
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
     clock.tick()
     img = sensor.snapshot()
+    adjustBrightness(img)
+
     for blob in img.find_blobs([threshold1], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
         img.draw_rectangle(blob.rect())
         blobPacket["cx"] = blob.cx()
@@ -94,14 +96,14 @@ while(True):
         blobPacket["color"] = 1
         print(blobPacket)
 
-    for blob in img.find_blobs([threshold2], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
-        img.draw_rectangle(blob.rect())
-        blobPacket["cx"] = blob.cx()
-        blobPacket["cy"] = blob.cy()
-        blobPacket["w"] = blob.w()
-        blobPacket["h"] = blob.h()
-        blobPacket["pixels"] = blob.pixels()
-        blobPacket["color"] = 2
-        print(blobPacket)
+   # for blob in img.find_blobs([threshold2], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
+    #    img.draw_rectangle(blob.rect())
+     #   blobPacket["cx"] = blob.cx()
+      #  blobPacket["cy"] = blob.cy()
+       # blobPacket["w"] = blob.w()
+        #blobPacket["h"] = blob.h()
+        #blobPacket["pixels"] = blob.pixels()
+        #blobPacket["color"] = 2
+        #print(blobPacket)
 
     print(endOfPacket)
