@@ -34,11 +34,22 @@ startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height
 endOfPacket = { "end": 0}
 led1.off()
 
+
+# Update threshold to allow auto gain/exposure changes:
+# TODO:
+def computeThreshold(img, threshold_base):
+    hist = img.get_histogram()
+#    return [(hist.get_percentile(0.97).l_value(),100),(0,0),(0,0)]
+    return threshold_base
+
 # Set Up Threshold LBA for Orange
-threshold = [15, 65, 20, 50, 25, 70]
+threshold_base = [15, 65, 20, 50, 25, 70]
+threshold = threshold;
 
 
 # Main Loop:
+counter = 0
+
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
@@ -65,3 +76,9 @@ while(True):
             led2.on()
     else:
             led2.off()
+
+    if counter < 20:
+        counter = counter + 1
+    else:
+        threshold = computeThreshold(img, threshold_base)
+        counter = 0

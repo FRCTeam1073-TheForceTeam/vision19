@@ -34,17 +34,30 @@ startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height
 endOfPacket = { "end": 0}
 
 
-threshold1 = [35,  65, -15, 15, 20, 80] # Yellow LAB values
-threshold2 = [0, 45, 30, 60, 30, 60]    # Orange LAB values
+# Update threshold to allow auto gain/exposure changes:
+# TODO:
+def computeThreshold(img, threshold_base):
+    hist = img.get_histogram()
+#    return [(hist.get_percentile(0.97).l_value(),100),(0,0),(0,0)]
+    return threshold_base
+
+# Set Up Threshold LBA for Orange
+thresholdY_base = [35,  65, -15, 15, 20, 80] # Yellow LAB values
+thresholdY = thresholdY_base;
+
+thresholdO_base = [0, 45, 30, 60, 30, 60]    # Orange LAB values
+thresholdO = thresholdO_base;
+
 
 # Main Loop;
+counter = 0
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
     img = sensor.snapshot()
 
     isActive = False
-    for blob in img.find_blobs([threshold1], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
+    for blob in img.find_blobs([thresholdY], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
         isActive = True
         img.draw_rectangle(blob.rect())
         blobPacket["cx"] = blob.cx()
@@ -55,7 +68,7 @@ while(True):
         blobPacket["color"] = 1
         print(blobPacket)
 
-   # for blob in img.find_blobs([threshold2], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
+   # for blob in img.find_blobs([thresholdO], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
     #    img.draw_rectangle(blob.rect())
      #   blobPacket["cx"] = blob.cx()
       #  blobPacket["cy"] = blob.cy()
@@ -72,3 +85,9 @@ while(True):
     else:
         led2.off()
 
+    if counter < 20:
+        counter = counter + 1
+    else:
+        thresholdY = computeThreshold(img, thresholdY_base)
+        thresholdO = computeThreshold(img, thresholdO_base)
+        counter = 0
