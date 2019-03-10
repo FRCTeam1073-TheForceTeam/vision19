@@ -1,6 +1,7 @@
 # Automatic RGB565 Color Tracking Example
 #
-# This example shows off single color automatic RGB565 color tracking using the OpenMV Cam.
+# This example shows off single color automatic RGB565 color tracking
+# using the OpenMV Cam.
 
 import sensor, image, time
 import pyb
@@ -20,6 +21,8 @@ fmt = sensor.RGB565
 res = sensor.QQVGA
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
+sensor.set_brightness(-1)
+sensor.set_saturation(1)
 sensor.skip_frames(time = 2000)
 sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
@@ -28,62 +31,6 @@ startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height
 endOfPacket = { "end": 0}
 clock = time.clock()
 led1.off()
-
-
-def adjustBrightness(img):
-    #print("adjust")
-    stats = img.get_statistics()
-    exposure = sensor.get_exposure_us()
-    gain = sensor.get_gain_db()
-
-    if stats.l_mean() < 45:
-        exposure = exposure + 200
-    elif stats.l_mean() > 75:
-        exposure = exposure - 200
-
-    if exposure > 33000:
-        gain = gain + 1
-        exposure = 20000
-    elif exposure < 8000:
-        gain = gain - 1
-        exposure = 30000
-
-    if gain < 1:
-        gain = 1
-    elif gain > 16:
-        gain = 16
-
-    sensor.set_auto_exposure(False, exposure)
-    sensor.set_auto_gain(False, gain)
-    #print("lmean = %f" % stats.l_mean())
-    #print("gain = %f" % gain)
-    #print("exposure = %d" % exposure)def adjustBrightness(img):
-    #print("adjust")
-    stats = img.get_statistics()
-    exposure = sensor.get_exposure_us()
-    gain = sensor.get_gain_db()
-
-    if stats.l_mean() < 45:
-        exposure = exposure + 200
-    elif stats.l_mean() > 75:
-        exposure = exposure - 200
-
-    if exposure > 33000:
-        gain = gain + 1
-        exposure = 20000
-    elif exposure < 8000:
-        gain = gain - 1
-        exposure = 30000
-
-    if gain < 1:
-        gain = 1
-    elif gain > 16:
-        gain = 16
-
-    sensor.set_auto_exposure(False, exposure)
-    sensor.set_auto_gain(False, gain)
-
-
 
 threshold = [15, 65, 20, 50, 25, 70]
 
@@ -101,8 +48,6 @@ while(True):
     print(startOfPacket)
     clock.tick()
     img = sensor.snapshot()
-    adjustBrightness(img)
-
 
     for blob in img.find_blobs([threshold], pixels_threshold=100, area_threshold=100, merge=True, margin=10):
                 if blob.h() > 0:

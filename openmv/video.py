@@ -14,8 +14,10 @@ file = open("camId.txt")
 cam = int(file.readline())
 file.close()
 sensor.reset()                      # Reset and initialize the sensor.
-sensor.set_pixformat(fmt) # Set pixel format to RGB565
-sensor.set_framesize(res)  # Set frame size to QVGA (320x240)
+sensor.set_pixformat(fmt)           # Set pixel format to RGB565
+sensor.set_framesize(res)           # Set frame size to QVGA (320x240)
+sensor.set_brightness(-1)
+sensor.set_saturation(1)
 led1.on()
 sensor.skip_frames(time = 1500)     # Wait for settings take effect.
 led1.off()

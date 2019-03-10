@@ -14,6 +14,8 @@ fmt = sensor.RGB565
 res = sensor.QQVGA
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
+sensor.set_brightness(-1)
+sensor.set_saturation(1)
 sensor.skip_frames(time = 2000)
 sensor.set_auto_gain(False) # must be turned off for color tracking
 sensor.set_auto_whitebal(False) # must be turned off for color tracking
@@ -23,68 +25,15 @@ endOfPacket = { "end": 0}
 clock = time.clock()
 
 
-def adjustBrightness(img):
-    #print("adjust")
-    stats = img.get_statistics()
-    exposure = sensor.get_exposure_us()
-    gain = sensor.get_gain_db()
-
-    if stats.l_mean() < 45:
-        exposure = exposure + 200
-    elif stats.l_mean() > 75:
-        exposure = exposure - 200
-
-    if exposure > 33000:
-        gain = gain + 1
-        exposure = 20000
-    elif exposure < 8000:
-        gain = gain - 1
-        exposure = 30000
-
-    if gain < 1:
-        gain = 1
-    elif gain > 16:
-        gain = 16
-
-    sensor.set_auto_exposure(False, exposure)
-    sensor.set_auto_gain(False, gain)
-    #print("lmean = %f" % stats.l_mean())
-    #print("gain = %f" % gain)
-    #print("exposure = %d" % exposure)def adjustBrightness(img):
-    #print("adjust")
-    stats = img.get_statistics()
-    exposure = sensor.get_exposure_us()
-    gain = sensor.get_gain_db()
-
-    if stats.l_mean() < 45:
-        exposure = exposure + 200
-    elif stats.l_mean() > 75:
-        exposure = exposure - 200
-
-    if exposure > 33000:
-        gain = gain + 1
-        exposure = 20000
-    elif exposure < 8000:
-        gain = gain - 1
-        exposure = 30000
-
-    if gain < 1:
-        gain = 1
-    elif gain > 16:
-        gain = 16
-
-    sensor.set_auto_exposure(False, exposure)
-    sensor.set_auto_gain(False, gain)
 
 threshold1 = [35,  65, -15, 15, 20, 80] # Yellow LAB values
-threshold2 = [0, 45, 30, 60, 30, 60] # Orange LAB values
+threshold2 = [0, 45, 30, 60, 30, 60]    # Orange LAB values
 
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
     clock.tick()
     img = sensor.snapshot()
-    adjustBrightness(img)
 
     for blob in img.find_blobs([threshold1], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
         img.draw_rectangle(blob.rect())
