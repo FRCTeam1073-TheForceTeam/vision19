@@ -45,7 +45,7 @@ def computeThreshold(img, threshold_base):
 thresholdY_base = [55, 90, -15, 15, 20, 65] # Yellow LAB values
 thresholdY = thresholdY_base;
 
-thresholdO_base = [0, 45, 30, 60, 30, 60]    # Orange LAB values
+thresholdO_base = [20, 70, 25, 75, 45, 75]    # Orange LAB values
 thresholdO = thresholdO_base;
 
 
@@ -68,15 +68,15 @@ while(True):
         blobPacket["color"] = 1
         print(blobPacket)
 
-   # for blob in img.find_blobs([thresholdO], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
-    #    img.draw_rectangle(blob.rect())
-     #   blobPacket["cx"] = blob.cx()
-      #  blobPacket["cy"] = blob.cy()
-       # blobPacket["w"] = blob.w()
-        #blobPacket["h"] = blob.h()
-        #blobPacket["pixels"] = blob.pixels()
-        #blobPacket["color"] = 2
-        #print(blobPacket)
+    for blob in img.find_blobs([thresholdO], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
+        img.draw_rectangle(blob.rect())
+        blobPacket["cx"] = blob.cx()
+        blobPacket["cy"] = blob.cy()
+        blobPacket["w"] = blob.w()
+        blobPacket["h"] = blob.h()
+        blobPacket["pixels"] = blob.pixels()
+        blobPacket["color"] = 2
+        print(blobPacket)
 
     print(endOfPacket)
 
