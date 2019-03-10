@@ -1,6 +1,6 @@
 #
 # Cargo ball tracking program.
-# 
+#
 
 import sensor, image, time
 import pyb
@@ -43,8 +43,8 @@ def computeThreshold(img, threshold_base):
     return threshold_base
 
 # Set Up Threshold LBA for Orange
-threshold_base = [15, 65, 20, 50, 25, 70]
-threshold = threshold;
+threshold_base = [20, 70, 25, 75, 45, 75]
+threshold = threshold_base;
 
 
 # Main Loop:

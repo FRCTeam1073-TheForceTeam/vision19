@@ -54,7 +54,6 @@ counter = 0
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
-    clock.tick()
     img = sensor.snapshot()
     if enable_lens_corr: img.lens_corr(1.8) # for 2.8mm lens...
 

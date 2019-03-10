@@ -42,7 +42,7 @@ def computeThreshold(img, threshold_base):
     return threshold_base
 
 # Set Up Threshold LBA for Orange
-thresholdY_base = [35,  65, -15, 15, 20, 80] # Yellow LAB values
+thresholdY_base = [55, 90, -15, 15, 20, 65] # Yellow LAB values
 thresholdY = thresholdY_base;
 
 thresholdO_base = [0, 45, 30, 60, 30, 60]    # Orange LAB values
@@ -57,7 +57,7 @@ while(True):
     img = sensor.snapshot()
 
     isActive = False
-    for blob in img.find_blobs([thresholdY], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
+    for blob in img.find_blobs([thresholdY], pixels_threshold=50, area_threshold=200, merge=True, merge_distance=15, margin=10):
         isActive = True
         img.draw_rectangle(blob.rect())
         blobPacket["cx"] = blob.cx()
