@@ -43,7 +43,7 @@ def computeThreshold(img, threshold_base):
     return threshold_base
 
 # Set Up Threshold LBA for Orange
-threshold_base = [20, 70, 25, 75, 45, 75]
+threshold_base = [20, 80, 0, 80, 30, 75]
 threshold = threshold_base;
 
 
