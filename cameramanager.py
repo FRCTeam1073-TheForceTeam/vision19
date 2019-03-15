@@ -59,7 +59,8 @@ class CameraManager:
         self.packetBuffer = bytearray(1000)
         self.readIndex = 0
         self.lock = threading.Lock()
-        self.cam = 0
+        self.cam = -1
+        self.ready = False
         self.image = None
 
     def disconnect(self):
@@ -69,6 +70,12 @@ class CameraManager:
                 self.__serial = None
         except:
             pass
+
+    def get_id(self):
+        return self.cam
+
+    def get_ready(self):
+        return self.ready
 
     def set_timeout(self, timeout):
         self.__serial.timeout = timeout
@@ -87,9 +94,13 @@ class CameraManager:
         self.lock.release()
 
     def get_image(self, buffer):
-        self.lock.acquire()
-        self.image.save(buffer, format = "JPEG")
-        self.lock.release()
+        try:
+            self.lock.acquire()
+            if self.image:
+                self.image.save(buffer, format = "JPEG")
+            self.lock.release()
+        except:
+            self.lock.release()
         
     def fb_dump(self):
         size = self.fb_size()
@@ -130,6 +141,7 @@ class CameraManager:
         return (size[0], size[1], buff.reshape((size[1], size[0], 3)))
 
     def exec_script(self, buf):
+        self.ready = False
         self.__serial.write(struct.pack("<BBI", CameraManager.__USBDBG_CMD, CameraManager.__USBDBG_SCRIPT_EXEC, len(buf)))
         self.__serial.write(buf.encode())
 
@@ -212,6 +224,7 @@ class CameraManager:
                 self.timestamp = packet['time']
                 self.waitingForCycle = False
                 self.data = []
+                self.ready = True
         else:
             packet = eval(buffer)
             if 'end' in packet:

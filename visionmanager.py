@@ -29,13 +29,12 @@ def set_mode(cam, mode):
         script = ""
         with open(give_script(mode), 'r') as fin:
                 script = fin.read()
-        print(script)
+#       print(script)
         cam.stop_script()
+        cam.enable_fb(True)        
         cam.exec_script(script)
-        cam.enable_fb(True)
 
-
-#camera initialization, GLOBAL
+# camera initialization, GLOBAL
 cam = []
 
 class ImageHandler(http.server.BaseHTTPRequestHandler):
@@ -45,6 +44,7 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                 try:
                         basepath = self.path.partition('?')
                         if basepath[0] == "/test.html":
+                                print("Loading test page.")
                                 self.send_response(200)
                                 self.send_header("Content-Type", 'text/html')
                                 self.send_header('Cache Control', 'no-cache')
@@ -57,7 +57,6 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                                 self.wfile.write(bytes(testpage, 'utf-8'))
                                 return
                                 
-                                
                         ci = -1
                         camnum = basepath[0]
                         ci = int(camnum[1])
@@ -65,8 +64,10 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                         if ci >= 0:
                                 imgData = io.BytesIO()
                                 for jj in range(0, len(cam)):
-                                        if cam[jj].cam == ci:
+                                        if cam[jj].get_id() == ci and cam[jj].get_ready():
+                                               # print(">")
                                                 cam[jj].get_image(imgData)
+                                               # print("<")
                                                 self.send_response(200)
         
                                                 self.send_header('Content-Type','image/jpeg')
@@ -75,13 +76,13 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                                                 self.end_headers()
                                                 self.wfile.write(imgData.getvalue())
                                                 return
-                                                
-                                self.send_response(404)
+                                        
 
-                                
+                        self.send_response(404)
                         return
                 except:
-#                        print("Handler exception.")
+                        print("Web handler exception.")
+                        self.send_response(404)
                         return
                 
         # This stops it spewing output all the time.
@@ -103,10 +104,11 @@ for ii in range(0, 8):
 
 print("STARTING CAMERA DEVICES:")
 print(cam_names)
-if len(cam) == 0:
+if len(cam_names) == 0:
         print("No Cameras")
-        exit
-        
+        exit(-1)
+else:
+        print("Starting...")
 
 # Create all our camera managers and set default modes
 for name in cam_names:
@@ -121,21 +123,24 @@ serverIP = sys.argv[3]
 NetworkTables.initialize(server=serverIP)
 nt = NetworkTables.getTable("CameraFeedback")
 
+              
+#main loop
+cam_frame = []
+
+print("Setting camera modes...")
+for ci in range(0,len(cam)):
+        set_mode(cam[ci], cam_mode[ci])
+        cam_frame.append(0)
+        nt.putString("cam_%d_mode" %ci, cam_mode[ci])
 
 # create image webserver running on separate thread:
 server_address = ('', int(videoPort))
 httpd = http.server.HTTPServer(server_address, ImageHandler)
 httpdThread = threading.Thread(target = httpd.serve_forever)
+print("Starting video server thread...")
 httpdThread.start()
-                                 
-#main loop
-cam_frame = []
 
-for ci in range(0,len(cam)):
-        set_mode(cam[ci], cam_mode[ci])
-        cam_frame.append(0)
-        nt.putString("cam_%d_mode" %ci, cam_mode[ci])
-        
+
 while True:
         for ci in range(0,len(cam)):
                 try:
@@ -208,5 +213,6 @@ while True:
                 if newmode != cam_mode[ci]:
                         cam_mode[ci] = newmode
                         set_mode(cam[ci], cam_mode[ci])
-
-                cam[ci].fb_update()
+                
+                if cam[ci].get_ready():
+                        cam[ci].fb_update()
