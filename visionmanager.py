@@ -98,7 +98,7 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
 # Check for available camera ports:
 cam_names = []
 # Set predefined modes for the robot:
-cam_mode = ["hatch", "video", "video", "video", "video", "video", "video"]
+cam_mode = ["hatch", "hatch", "video", "video", "video", "video", "video"]
 
 for ii in range(0, 8):
         name = "/dev/ttyACM%d" % ii
@@ -184,7 +184,6 @@ while True:
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, [])
                         
                         elif cam_mode[ci] == "cargo":
-
                                 data = []
                                 for blob in cam[ci].data:
                                         data.append(blob["cx"])
@@ -213,12 +212,10 @@ while True:
                         elif cam_mode[ci] == "hatch":
                                 data = []
                                 for blob in cam[ci].data:
-                                        data.append(blob["cx"])
-                                        data.append(blob["cy"])
-                                        data.append(blob["w"])
-                                        data.append(blob["h"])
-                                        data.append(blob["pixels"])
-                                        data.append(blob["color"])
+                                        data.append(blob["tx"])
+                                        data.append(blob["ty"])
+                                        data.append(blob["trange"])
+                                        data.append(blob["tconfidence"])
                                 nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, data)
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])

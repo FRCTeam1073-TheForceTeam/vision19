@@ -23,8 +23,8 @@
 		- cam_#_lineseg number array [x1, y1, x2, y2, theta,
                   score, length] <-- "n" number of times
 		
-		- cam_#_hatch number array [cx, cy, width, height,
-                  pixels, color] <-- "n" number of times for n blobs
+		- cam_#_hatch number array [tx, tx, trange, tconfidence]
+		<-- "n" number of times for n blobs
 		
 		- cam_#_cargo number array [cx, cy, width, height,
                   pixels, color] <-- "n" number of times for n blos
