@@ -56,7 +56,7 @@ def rangeFunction(a, b):
 
 
 # Set Up Threshold LBA for Green Markers
-thresholdM_base = [10, 80, 35, 80, 14, 47] 
+thresholdM_base = [85, 97, -50, -35, -20, 0]
 thresholdM = thresholdM_base;
 
 
@@ -84,7 +84,7 @@ while(True):
                 for m_b in markers:
                     if m_b.theta() < 87 and close(m_a, m_b):
                         center = int((m_a.x1() + m_b.x1()) / 2.0)
-                        targetPacket["tx"] = center
+                        targetPacket["tx"] = center - sensor.width()/2
                         targetPacket["ty"] = m_a.y1()
                         targetPacket["trange"] = rangeFunction(m_a, m_b)
                         targetPacket["tconfidence"] = m_a.length()
