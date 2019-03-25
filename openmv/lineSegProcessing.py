@@ -41,7 +41,7 @@ endOfPacket = { "end": 0}
 def computeThreshold(img):
     hist = img.get_histogram()
     return [(hist.get_percentile(0.97).l_value(),100),(0,0),(0,0)]
-
+#hist = [0. 0. 0. 0. 0 .0]
 
 # Initial threshold value from first picture:
 img = sensor.snapshot()

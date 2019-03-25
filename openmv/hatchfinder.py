@@ -27,6 +27,7 @@ sensor.skip_frames(time = 1500)
 led1.off()
 sensor.set_auto_gain(False)     # Must be turned off for color tracking
 sensor.set_auto_whitebal(False) # Must be turned off for color tracking
+sensor.set_auto_exposure(False)
 
 # Set Up Packets:
 blobPacket = {"cx": 0, "cy": 0, "w": 0, "h": 0, "pixels": 0,"color": 0}
@@ -41,12 +42,20 @@ def computeThreshold(img, threshold_base):
 #    return [(hist.get_percentile(0.97).l_value(),100),(0,0),(0,0)]
     return threshold_base
 
+
+def close(a, b):
+    if abs(a.x2() - b.x2()) > abs(a.x1() - b.x1()):
+        return True
+    else:
+        return False
+
+
 # Set Up Threshold LBA for Orange
 thresholdY_base = [55, 90, -15, 15, 20, 65] # Yellow LAB values
 thresholdY = thresholdY_base;
 
-thresholdO_base = [20, 70, 25, 75, 45, 75]    # Orange LAB values
-thresholdO = thresholdO_base;
+thresholdR_base = [10, 80, 35, 80, 14, 47]    # red LAB values
+thresholdR = thresholdR_base;
 
 
 # Main Loop;
@@ -55,21 +64,21 @@ while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
     img = sensor.snapshot()
+    markers = []
 
     isActive = False
-    for blob in img.find_blobs([thresholdY], pixels_threshold=50, area_threshold=200, merge=True, merge_distance=15, margin=10):
-        isActive = True
-        img.draw_rectangle(blob.rect())
-        blobPacket["cx"] = blob.cx()
-        blobPacket["cy"] = blob.cy()
-        blobPacket["w"] = blob.w()
-        blobPacket["h"] = blob.h()
-        blobPacket["pixels"] = blob.pixels()
-        blobPacket["color"] = 1
-        print(blobPacket)
+    #for blob in img.find_blobs([thresholdY], pixels_threshold=50, area_threshold=200, merge=True, merge_distance=15, margin=10):
+     #   isActive = True
+      #  img.draw_rectangle(blob.rect())
+       # blobPacket["cx"] = blob.cx()
+        #blobPacket["cy"] = blob.cy()
+        #blobPacket["w"] = blob.w()
+        #blobPacket["h"] = blob.h()
+        #blobPacket["pixels"] = blob.pixels()
+        #blobPacket["color"] = 1
+        #print(blobPacket)
 
-    for blob in img.find_blobs([thresholdO], pixels_threshold=100, area_threshold=100, merge=True, merge_distance=10, margin=10):
-        img.draw_rectangle(blob.rect())
+    for blob in img.find_blobs([thresholdR], pixels_threshold=45, area_threshold=50, merge=True, merge_distance=5, margin=10):
         blobPacket["cx"] = blob.cx()
         blobPacket["cy"] = blob.cy()
         blobPacket["w"] = blob.w()
@@ -77,6 +86,20 @@ while(True):
         blobPacket["pixels"] = blob.pixels()
         blobPacket["color"] = 2
         print(blobPacket)
+        reg = img.get_regression([thresholdR], roi=blob.rect(), pixels_threshold=45, area_threshold=50)
+        if reg:
+            img.draw_line(reg.line(), color = 0)
+            markers.append(reg)
+            print(reg)
+
+        for m in markers:
+            if m.theta() > 93:
+                for a in markers:
+                    if a.theta() < 87 and close(m, a):
+                        center = (m.x1() + a.x1()) / 2.0
+                        img.draw_line((int(center), 0, int(center), 100), color=(0, 0, 50))
+
+        img.draw_rectangle(blob.rect(), color=(0, 100, 0))
 
     print(endOfPacket)
 
@@ -89,5 +112,5 @@ while(True):
         counter = counter + 1
     else:
         thresholdY = computeThreshold(img, thresholdY_base)
-        thresholdO = computeThreshold(img, thresholdO_base)
+        thresholdR = computeThreshold(img, thresholdR_base)
         counter = 0
