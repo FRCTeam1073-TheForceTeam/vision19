@@ -1,0 +1,17 @@
+# Vision Service
+[Unit]
+Description=FRC 1073 Vision Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=pi
+WorkingDirectory=/home/pi/vision19
+ExecStart=/usr/bin/python3 visionmanager.py video 8081 10.10.73.2
+
+[Install]
+WantedBy=multi-user.target
+
+
