@@ -14,7 +14,9 @@ from PIL import Image
 
 
 def give_script(mode):
-        if mode == "lines":
+        if mode == "id":
+                return "./openmv/id.py"
+        elif mode == "lines":
                 return "./openmv/lineSegProcessing.py"
         elif mode == "cargo":
                 return "./openmv/cargo.py"
@@ -69,14 +71,14 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                                                 cam[jj].get_image(imgData)
                                                # print("<")
                                                 self.send_response(200)
-        
+
                                                 self.send_header('Content-Type','image/jpeg')
                                                 self.send_header('Content-Length', imgData.tell())
                                                 self.send_header('Cache Control', 'no-cache')
                                                 self.end_headers()
                                                 self.wfile.write(imgData.getvalue())
                                                 return
-                                        
+
 
                         self.send_response(404)
                         return
@@ -84,18 +86,19 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                         print("Web handler exception.")
                         self.send_response(404)
                         return
-                
+
         # This stops it spewing output all the time.
         def log_message(self, format, *args):
                 return
-        
 
-        
+
+
 #  MAIN PROGRAM ENTRY:
 
 # Check for available camera ports:
 cam_names = []
-cam_mode = []
+# Set predefined modes for the robot:
+cam_mode = ["hatch", "video", "video", "video", "video", "video", "video"]
 
 for ii in range(0, 8):
         name = "/dev/ttyACM%d" % ii
@@ -113,13 +116,13 @@ else:
 # Create all our camera managers and set default modes
 for name in cam_names:
         cam.append(CameraManager(name))
-        cam_mode.append(sys.argv[1])
+
 
 # Parse our video port argument
-videoPort = sys.argv[2]
+videoPort = sys.argv[1]
 
 # networkTables initialization for our CameraFeedback table
-serverIP = sys.argv[3]
+serverIP = sys.argv[2]
 NetworkTables.initialize(server=serverIP)
 nt = NetworkTables.getTable("CameraFeedback")
 
@@ -127,11 +130,27 @@ nt = NetworkTables.getTable("CameraFeedback")
 #main loop
 cam_frame = []
 
+print("RUNNING ID ON CAMERA DEVICES:")
+for ci in range(0,len(cam)):
+        set_mode(cam[ci], "id")
+        while cam[ci].get_id() < 0:
+                try:
+                        cam[ci].processData()
+                except:
+                        pass
+                
+                
+print("LOADED ALL CAMERA IDs:")
+for ci in range(0, len(cam)):
+        print("Cam port %d with ID = %d"%(ci, cam[ci].get_id()))
+                
+
 print("Setting camera modes...")
 for ci in range(0,len(cam)):
-        set_mode(cam[ci], cam_mode[ci])
+        print("Cam ID %d mode: %s"%(cam[ci].get_id(), cam_mode[cam[ci].get_id()]))
+        set_mode(cam[ci], cam_mode[cam[ci].get_id()])
         cam_frame.append(0)
-        nt.putString("cam_%d_mode" %ci, cam_mode[ci])
+        nt.putString("cam_%d_mode" %ci, cam_mode[cam[ci].get_id()])
 
 # create image webserver running on separate thread:
 server_address = ('', int(videoPort))
