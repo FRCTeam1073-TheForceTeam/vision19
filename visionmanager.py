@@ -213,9 +213,9 @@ while True:
                                 data = []
                                 for blob in cam[ci].data:
                                         data.append(blob["tx"])
-                                        data.append(blob["ty"])
+                                        # data.append(blob["ty"])
                                         data.append(blob["trange"])
-                                        data.append(blob["tconfidence"])
+                                        #data.append(blob["tconfidence"])
                                 nt.putNumberArray("cam_%d_cargo" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_hatch" %cam[ci].cam, data)
                                 nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
