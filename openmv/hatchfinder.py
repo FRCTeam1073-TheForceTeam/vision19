@@ -20,14 +20,14 @@ file.close()
 sensor.reset()
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
-sensor.set_brightness(-1)
-sensor.set_saturation(1)
+sensor.set_brightness(-2)
+sensor.set_saturation(2)
 led1.on()
 sensor.skip_frames(time = 1500)
 led1.off()
 sensor.set_auto_gain(False)     # Must be turned off for color tracking
 sensor.set_auto_whitebal(False) # Must be turned off for color tracking
-sensor.set_auto_exposure(False) # Turning off to track down problem
+#sensor.set_auto_exposure(False) # Turning off to track down problem
 
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
@@ -46,17 +46,20 @@ def computeThreshold(img, threshold_base):
 # Figure out if two markers are associated with single hatch target:
 def close(a, b):
     if abs(a.x2() - b.x2()) > abs(a.x1() - b.x1()):
-        return True
+        if abs(a.x1() - b.x1()) < 120:
+            return True
+        else:
+            return False
     else:
         return False
 
 # Compute a range estimate based on separation of markers:
 def rangeFunction(a, b):
-    return 1.0
+    return abs(a.x1() - m_b.x1())
 
 
 # Set Up Threshold LBA for Green Markers
-thresholdM_base = [85, 97, -50, -35, -20, 0]
+thresholdM_base = [75, 100, -60, -30, -10, 10]
 thresholdM = thresholdM_base;
 
 
@@ -79,19 +82,23 @@ while(True):
             img.draw_line(regLine.line(), color = 0)
             markers.append(regLine)
 
-        for m_a in markers:
-            if m_a.theta() > 93:
-                for m_b in markers:
-                    if m_b.theta() < 87 and close(m_a, m_b):
-                        center = int((m_a.x1() + m_b.x1()) / 2.0)
-                        targetPacket["tx"] = center - sensor.width()/2
-                        targetPacket["ty"] = m_a.y1()
-                        targetPacket["trange"] = rangeFunction(m_a, m_b)
-                        targetPacket["tconfidence"] = m_a.length()
-                        print(targetPacket)
-                        img.draw_line((center, 0, center, sensor.height()), color=(0, 0, 0))
+        #img.draw_rectangle(blob.rect(), color=(0, 100, 0))
 
-        img.draw_rectangle(blob.rect(), color=(0, 100, 0))
+
+    for m_a in markers:
+        if m_a.theta() > 93:
+            for m_b in markers:
+                if m_b.theta() < 87 and close(m_a, m_b):
+                    center = int((m_a.x1() + m_b.x1()) / 2.0)
+                    targetPacket["tx"] = center - sensor.width()/2
+                    targetPacket["ty"] = m_a.y1()
+                    targetPacket["trange"] = rangeFunction(m_a, m_b)
+                    targetPacket["tconfidence"] = m_a.length()
+                    print(targetPacket)
+                    img.draw_line((center, 0, center, sensor.height()), color=(0, 0, 0))
+                    #print("dist = %d" %(abs(m_a.x1() - m_b.x1())))
+                    break
+
 
     print(endOfPacket)
 
