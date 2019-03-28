@@ -4,12 +4,40 @@
 
 import sensor, image, time
 import pyb
+from pyb import SPI
 
 # Camera/Hardware Objects:
 fmt = sensor.RGB565
 res = sensor.QVGA
 led1 = pyb.LED(1)
 led2 = pyb.LED(2)
+
+# SPI bus for lighting
+spi = SPI(2, SPI.MASTER, 500000, polarity=1, phase=0, crc=None)
+ledreset = bytearray(12)
+# Reset the LED strip
+spi.write(ledreset)
+
+# Turn on Green lighting:
+ledgreen = bytearray(12)
+intensity = 128+120
+ledgreen[0] = intensity
+ledgreen[1] = 128
+ledgreen[2] = 128
+ledgreen[3] = intensity
+ledgreen[4] = 128
+ledgreen[5] = 128
+ledgreen[6] = intensity
+ledgreen[7] = 128
+ledgreen[8] = 128
+ledgreen[9] = intensity
+ledgreen[10] = 128
+ledgreen[11] = 128
+
+
+spi.write(ledgreen)
+spi.write(ledreset)
+
 
 # Get Camera ID:
 file = open("camId.txt")
@@ -67,7 +95,7 @@ thresholdM = thresholdM_base;
 # Green LED on:
 led2.on()
 counter = 0
-# Main Loop
+# Main Loopq
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
