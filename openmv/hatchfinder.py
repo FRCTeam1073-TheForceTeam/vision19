@@ -14,25 +14,19 @@ led2 = pyb.LED(2)
 
 # SPI bus for lighting
 spi = SPI(2, SPI.MASTER, 500000, polarity=1, phase=0, crc=None)
-ledreset = bytearray(12)
+ledreset = bytearray(24)
 # Reset the LED strip
 spi.write(ledreset)
 
 # Turn on Green lighting:
-ledgreen = bytearray(12)
-intensity = 128+120
-ledgreen[0] = intensity
-ledgreen[1] = 128
-ledgreen[2] = 128
-ledgreen[3] = intensity
-ledgreen[4] = 128
-ledgreen[5] = 128
-ledgreen[6] = intensity
-ledgreen[7] = 128
-ledgreen[8] = 128
-ledgreen[9] = intensity
-ledgreen[10] = 128
-ledgreen[11] = 128
+ledgreen = bytearray(24)
+for ii in range(0,len(ledgreen)):
+    ledgreen[ii] = 128
+
+intensity = 80;
+
+for ii in range(0,8):
+    ledgreen[ii*3] = 128 + intensity;
 
 
 spi.write(ledgreen)
