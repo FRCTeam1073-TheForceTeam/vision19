@@ -23,7 +23,7 @@ ledgreen = bytearray(24)
 for ii in range(0,len(ledgreen)):
     ledgreen[ii] = 128
 
-intensity = 80;
+intensity = 110;
 
 for ii in range(0,8):
     ledgreen[ii*3] = 128 + intensity;
