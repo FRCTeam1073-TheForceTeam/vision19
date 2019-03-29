@@ -89,7 +89,11 @@ thresholdM = thresholdM_base;
 # Green LED on:
 led2.on()
 counter = 0
-# Main Loopq
+
+# Central band from the image.
+mainRoi = (0,int(sensor.height()*0.15),sensor.width(),int(sensor.height()*0.8))
+
+# Main Loop
 while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
@@ -98,7 +102,7 @@ while(True):
 
     isActive = False
 
-    for blob in img.find_blobs([thresholdM], pixels_threshold=45, area_threshold=50, merge=True, merge_distance=5, margin=10):
+    for blob in img.find_blobs([thresholdM], roi=mainRoi, pixels_threshold=45, area_threshold=50, merge=True, merge_distance=5, margin=10):
         regLine = img.get_regression([thresholdM], roi=blob.rect(), pixels_threshold=45, area_threshold=50)
         if regLine:
             img.draw_line(regLine.line(), color = 0)
