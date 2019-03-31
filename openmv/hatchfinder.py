@@ -42,14 +42,14 @@ file.close()
 sensor.reset()
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
-sensor.set_brightness(-2)
+sensor.set_brightness(-3)
 sensor.set_saturation(2)
 led1.on()
 sensor.skip_frames(time = 1500)
 led1.off()
 sensor.set_auto_gain(False)     # Must be turned off for color tracking
 sensor.set_auto_whitebal(False) # Must be turned off for color tracking
-#sensor.set_auto_exposure(False) # Turning off to track down problem
+sensor.set_auto_exposure(False) # Turning off to track down problem
 
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
@@ -81,7 +81,7 @@ def rangeFunction(a, b):
 
 
 # Set Up Threshold LBA for Green Markers
-thresholdM_base = [75, 100, -60, -30, -10, 10]
+thresholdM_base = [45, 100, -60, -20, 0, 40]
 thresholdM = thresholdM_base;
 
 
@@ -102,7 +102,7 @@ while(True):
 
     isActive = False
 
-    for blob in img.find_blobs([thresholdM], roi=mainRoi, pixels_threshold=45, area_threshold=50, merge=True, merge_distance=5, margin=10):
+    for blob in img.find_blobs([thresholdM], roi=mainRoi, pixels_threshold=45, area_threshold=50, merge=True, merge_distance=3, margin=10):
         regLine = img.get_regression([thresholdM], roi=blob.rect(), pixels_threshold=45, area_threshold=50)
         if regLine:
             img.draw_line(regLine.line(), color = 0)

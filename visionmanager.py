@@ -159,7 +159,7 @@ httpdThread = threading.Thread(target = httpd.serve_forever)
 print("Starting video server thread...")
 httpdThread.start()
 
-
+loopCounter = 0
 while True:
         for ci in range(0,len(cam)):
                 try:
@@ -232,3 +232,20 @@ while True:
                 
                 if cam[ci].get_ready():
                         cam[ci].fb_update()
+
+        if loopCounter %1200 == 0:
+                for c in range(0, len(cam)):
+                        if cam[c].get_ready():
+                                try:
+                                        imgData = io.BytesIO()
+                                        cam[c].get_image(imgData)
+                                        outf = open("./img_cam_%d_%d.jpeg" % (cam[c].get_id(), (loopCounter/1200)), "wb")
+                                        outf.write(imgData.getvalue())
+                                        outf.close()
+                                except:
+                                        pass
+
+                                  
+        loopCounter = loopCounter + 1
+
+
