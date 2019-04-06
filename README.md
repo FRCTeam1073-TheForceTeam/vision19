@@ -20,20 +20,23 @@
                   station (aka "this camera died, this one caught on
                   fire, and this camera never, calls me")
 		
-		- cam_#_lineseg number array [x1, y1, x2, y2, theta,
-                  score, length] <-- "n" number of times
+		- cam_#_lines number array [x1, y1, x2, y2, theta,
+                  magnitude, length] <-- "n" number of times
 		
-		- cam_#_hatch number array [tx, trange]
-		<-- "n" number of times for n blobs
+		- cam_#_wline number array [xc, yc, theta, length,
+		  area] <-- "n" number of times for n lines
+
+                - cam_#_bottomline number array [xc, yc, theta, length,
+                  area] <-- "n" number of times for n lines
 		
-		- cam_#_cargo number array [cx, cy, width, height,
-                  pixels, color] <-- "n" number of times for n blos
-		
-		- cam_#_?(etc.)  number array [ ~~fill~in~the~blank~~]
-                  <-- "n" number of times
+		- cam_#_bline number array [xc, yc, length,
+                  separation] <-- "n" number of times for n lines
+
+                - cam_#_greentarget number array [tx, trange] <--"n" number of
+                  times for n blos
 		
 	- inputs: cam_mode
-	- outputs: cam_frame, cam_status, cam_lineseg, cam_blobs, cam_etc.
+	- outputs: cam_frame, cam_status, cam_lineseg, cam_wline, cam_etc.
 
 
 = openmv serial protocol:
