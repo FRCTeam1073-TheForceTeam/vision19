@@ -24,6 +24,7 @@ sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
 sensor.set_brightness(-1)
 sensor.set_saturation(1)
+sensor.set_vflip(True)
 led1.on()
 sensor.skip_frames(time = 1500)
 led1.off()
@@ -51,7 +52,7 @@ img = sensor.snapshot()
 thresh = computeThreshold(img)
 counter = 0
 
-searchroi = (0,int(sensor.height()*0.4),sensor.width(),int(sensor.height()*0.6))
+searchroi = (0,int(sensor.height()*0.1),sensor.width(),int(sensor.height()*0.8))
 
 
 # Main Loop:
@@ -89,18 +90,17 @@ while(True):
             img.draw_rectangle(roi, color=(90,0,0))
             regLine = img.get_regression(thresh, roi=roi, pixels_threshold=40, area_threshold=40)
             if regLine:
-                center = int((m_a.x1() + m_b.x1()) / 2.0)
+                center = int((regLine.x1() + regLine.x2()) / 2.0)
                 targetPacket["xc"] = center - sensor.width()/2
-                targetPacket["yc"] = m_a.y1()
-                targetPacket["theta"] = rangeFunction(m_a, m_b)
-                targetPacket[""] = m_a.length()
+                targetPacket["yc"] = int((regLine.y1()+regLine.y2())/2.0)
+                targetPacket["theta"] = regLine.theta()
+                targetPacket[""] = regLine.length()
                 print(targetPacket)
-                img.draw_line(regLine.line(), color = 0)
                 linesegs.append(regLine)
 
 
     for l in linesegs:
-        #img.draw_line(l.line(), color = (255, 0, 0))
+        img.draw_line(l.line(), color = (255, 0, 0))
         print(l)
 
     print(endOfPacket)
