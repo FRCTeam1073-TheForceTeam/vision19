@@ -54,7 +54,7 @@ def score(la, lb):
     cost = cost + (abs(la.y1() - lb.y1()) * 20) # adds the difference on the vertical plane
     cost = cost + (abs(la.length() - lb.length()) * 5)  # length
     cost = cost + (abs(abs(la.x1() - lb.x1()) - abs(la.x2() - lb.x2())) * 2) #parallelism
-    print("cost %f" %cost)
+    #print("cost %f" %cost)
     return cost
 
 #finding lines that are the "best match" for eacher (at the right distance and angle)
@@ -138,8 +138,8 @@ while(True):
             lmatch[lmatch[li]] = li
             #print("%d matched %d" %(li, lmatch[li]))
 
-    print(linesegs)
-    print(lmatch)
+    #print(linesegs)
+    #print(lmatch)
 
     for l in range(0, len(lmatch)):
         if lmatch[l] != -1:

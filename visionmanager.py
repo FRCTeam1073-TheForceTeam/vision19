@@ -30,6 +30,7 @@ def give_script(mode):
                 return "./openmv/video.py"
         elif mode == "video2":
                 return "./openmv/video2.py"
+        
                 
 def set_mode(cam, mode):
         script = ""
@@ -100,26 +101,28 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
 #  MAIN PROGRAM ENTRY:
 
 # Check for available camera ports:
-cam_names = []
+cam_devices = []
+
 # Set predefined modes for the robot:
+# These are indexed by camera ID
 cam_mode = ["bline", "wline", "video2", "video", "video", "video", "video"]
 
 for ii in range(0, 8):
-        name = "/dev/ttyACM%d" % ii
-        if os.path.exists(name):
-                cam_names.append(name)
+        device = "/dev/ttyACM%d" % ii
+        if os.path.exists(device):
+                cam_devices.append(device)
 
 print("STARTING CAMERA DEVICES:")
-print(cam_names)
-if len(cam_names) == 0:
+print(cam_devices)
+if len(cam_devices) == 0:
         print("No Cameras")
         exit(-1)
 else:
         print("Starting...")
 
 # Create all our camera managers and set default modes
-for name in cam_names:
-        cam.append(CameraManager(name))
+for dev in cam_devices:
+        cam.append(CameraManager(dev))
 
 
 # Parse our video port argument
@@ -142,19 +145,21 @@ for ci in range(0,len(cam)):
                         cam[ci].processData()
                 except:
                         pass
-                
+# Now each camera knows its ID
+
                 
 print("LOADED ALL CAMERA IDs:")
 for ci in range(0, len(cam)):
-        print("Cam port %d with ID = %d"%(ci, cam[ci].get_id()))
+        print("Cam device %s with ID = %d"%(cam_devices[ci], cam[ci].get_id()))
                 
 
 print("Setting camera modes...")
 for ci in range(0,len(cam)):
-        print("Cam ID %d mode: %s"%(cam[ci].get_id(), cam_mode[cam[ci].get_id()]))
-        set_mode(cam[ci], cam_mode[cam[ci].get_id()])
+        cami = cam[ci].get_id()
+        print("Cam ID %d mode: %s"%(cami, cam_mode[cami]))
+        set_mode(cam[ci], cam_mode[cami])
         cam_frame.append(0)
-        nt.putString("cam_%d_mode" %ci, cam_mode[cam[ci].get_id()])
+        nt.putString("cam_%d_mode" %cami, cam_mode[cami])
 
 # create image webserver running on separate thread:
 server_address = ('', int(videoPort))
@@ -166,6 +171,7 @@ httpdThread.start()
 loopCounter = 0
 while True:
         for ci in range(0,len(cam)):
+                # Mapped camera index value:
                 cami = cam[ci].get_id()
                 try:
                         cam[cami].processData()
@@ -225,8 +231,8 @@ while True:
                         elif cam_mode[cami] == "bline":
                                 data = []
                                 for target in cam[cami].data:
-                                        print("bline %d" %cami)
-                                        print("bline: ", target)
+                                        #print("bline %d" %cami)
+                                        #print("bline: ", target)
                                         data.append(target["xc"])
                                         data.append(target["yc"])
                                         data.append(target["length"])
