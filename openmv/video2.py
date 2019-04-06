@@ -22,6 +22,8 @@ sensor.set_pixformat(fmt)           # Set pixel format to RGB565
 sensor.set_framesize(res)           # Set frame size to QVGA (320x240)
 sensor.set_brightness(-2)
 sensor.set_saturation(1)
+sensor.set_vflip(True)
+sensor.set_hmirror(True)
 led1.on()
 sensor.skip_frames(time = 2000)     # Wait for settings take effect.
 led1.off()

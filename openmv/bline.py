@@ -27,9 +27,9 @@ sensor.set_framesize(res)
 led1.on()
 sensor.skip_frames(time = 2000)
 led1.off()
-sensor.set_auto_whitebal(False)
-sensor.set_auto_gain(False)
-sensor.set_auto_exposure(False)
+#sensor.set_auto_whitebal(False)
+#sensor.set_auto_gain(False)
+#sensor.set_auto_exposure(False)
 
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
@@ -39,9 +39,9 @@ targetPacket = {"xc": 0, "yc": 0, "length": 0, "separation": 0}
 
 # Update threshold to allow auto gain/exposure changes:
 def computeThreshold(img):
-    #hist = img.get_histogram()
-    #return [(0,hist.get_percentile(0.2).l_value()),(-40,40),(-40,40)]
-    return [(0, 25), (-20,20), (-20,20)]
+    hist = img.get_histogram()
+    return [(0,hist.get_percentile(0.07).l_value()),(-20,20),(-20,20)]
+    #return [(0, 25), (-20,20), (-20,20)]
 
 #finding the score of potential line matches based on separation, angles, and y center points
 def score(la, lb):

@@ -25,7 +25,7 @@ sensor.set_framesize(res)
 sensor.set_brightness(-1)
 sensor.set_saturation(1)
 led1.on()
-sensor.skip_frames(time = 1500)
+sensor.skip_frames(time = 2000)
 led1.off()
 sensor.set_auto_whitebal(False)
 
@@ -68,15 +68,6 @@ while(True):
     blobs = img.find_blobs(thresh, roi=searchroi, pixels_threshold=45, area_threshold=75,
                            merge=False, margin=10)
 
-    # `merge_distance` controls the merging of nerby lines. At 0 (the
-    # default), no merging is done. At 1, any line 1 pixel away from
-    # another is merged... and so on as you increase this value. You
-    # may wish to merge lines as line segment detection produces a lot
-    # of line segment results.
-
-    # `max_theta_diff` controls the maximum amount of rotation
-    # difference between any two lines about to be merged. The default
-    # setting allows for 15 degrees.
     linesegs = []
     if counter < 10:
         counter = counter + 1
