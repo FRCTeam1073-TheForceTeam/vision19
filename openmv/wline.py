@@ -32,7 +32,7 @@ sensor.set_auto_whitebal(False)
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
-targetPacket = {"xc": 0, "yc": 0, "theta": 0, "blobArea": 0}
+targetPacket = {"xc": 0, "yc": 0, "theta": 0, "length": 0, "area": 0}
 
 # All lines also have `x1()`, `y1()`, `x2()`, and `y2()` methods to
 # get their end-points and a `line()` method to get all the above as
@@ -51,7 +51,8 @@ img = sensor.snapshot()
 thresh = computeThreshold(img)
 counter = 0
 
-searchroi = (0,int(sensor.height()*0.1),sensor.width(),int(sensor.height()*0.8))
+# Only search bottom portion of the image:
+searchroi = (0,int(sensor.height()*0.4),sensor.width(),int(sensor.height()*0.6))
 
 
 # Main Loop:
@@ -84,7 +85,7 @@ while(True):
         counter = 0
 
     for b in blobs:
-        if b.area() < 15000:
+        if b.area() < 15000 and b.h() > b.w()*1.3:
             roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
             img.draw_rectangle(roi, color=(90,0,0))
             regLine = img.get_regression(thresh, roi=roi, pixels_threshold=40, area_threshold=40)
@@ -93,7 +94,8 @@ while(True):
                 targetPacket["xc"] = center - sensor.width()/2
                 targetPacket["yc"] = int((regLine.y1()+regLine.y2())/2.0)
                 targetPacket["theta"] = regLine.theta()
-                targetPacket[""] = regLine.length()
+                targetPacket["length"] = regLine.length()
+                targetPacket["area"] = b.area()
                 print(targetPacket)
                 linesegs.append(regLine)
 

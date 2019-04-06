@@ -23,7 +23,7 @@ sensor.reset()
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
 sensor.set_brightness(-1)
-sensor.set_saturation(1)
+sensor.set_saturation(2)
 led1.on()
 sensor.skip_frames(time = 1500)
 led1.off()
@@ -32,7 +32,7 @@ sensor.set_auto_whitebal(False)
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
-targetPacket = {"xc": 0, "yc": 0, "theta": 0, "blobArea": 0}
+targetPacket = {"xc": 0, "yc": 0, "length": 0, "separation": 0}
 
 # All lines also have `x1()`, `y1()`, `x2()`, and `y2()` methods to
 # get their end-points and a `line()` method to get all the above as
@@ -52,6 +52,11 @@ thresh = computeThreshold(img)
 counter = 0
 
 searchroi = (0,int(sensor.height()*0.15),sensor.width(),int(sensor.height()*0.7))
+
+# Search key allows ordering lines by x1:
+def x1(line):
+    return line.x1()
+
 
 
 # Main Loop:
@@ -91,25 +96,31 @@ while(True):
             if regLine and (regLine.theta() > 165 or regLine.theta() < 15):
                 linesegs.append(regLine)
 
-    # Now sort through our best "black lines":
-    for l1 in linesegs:
-        for l2 in linesegs:
-            if l1.x1() != l2.x1() and l1.x2() != l2.x2():
-                # Not the same line:
-                if abs(l1.x1() - l2.x1()) > 20:
-                    center = int((l1.x1() + l2.x1()) / 2.0)
+    # Now sort through our best "black lines" in x1 coordinate order:
+    linesegs = linesegs.sort(key=x1)
+
+    # Loop over all but last line.
+    # Search for matches from this line onward, makes sure you don't compare
+    # line to itself or create 'double answers'.
+    if linesegs:
+        print(linesegs)
+        for l1 in range(0, len(linesegs) - 1):
+            for l2 in range(l1+1, len(linesegs)):
+                # Not the "double" line:
+                if abs(linesegs[l1].x1() - linesegs[l2].x1()) > 30:
+                    center = int((linesegs[l1].x1() + linesegs[l2].x1()) / 2.0)
                     targetPacket["xc"] = center - sensor.width()/2
-                    targetPacket["yc"] = int((l1.y1() + l1.y2())/2.0)
-                    targetPacket["theta"] = 0.0
-                    targetPacket["length"] = l1.length()
+                    targetPacket["yc"] = int((linesegs[l1].y1() + linesegs[l1].y2())/2.0)
+                    targetPacket["length"] = linesegs[l1].length()
+                    targetPacket["separation"] = abs(linesegs[l1].x1() - linesegs[l2].x1())
                     img.draw_line((center,0,center,sensor.height()), color = (0,255,0))
                     print(targetPacket)
                     continue
 
 
-    for l in linesegs:
-        img.draw_line(l.line(), color = (255, 0, 0))
-        #print(l)
+        for l in linesegs:
+            img.draw_line(l.line(), color = (255, 0, 0))
+            #print(l)
 
     print(endOfPacket)
 

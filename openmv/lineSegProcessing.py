@@ -82,8 +82,8 @@ while(True):
     for b in blobs:
         #img.draw_rectangle(b.rect(), color=(0,80,0))
         if b.area() < 1700:
-           roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
-           #img.draw_rectangle(b.rect(), color=(90,0,0))
+           roi = (b.x()-4, b.y()-4, b.w()+8, b.h()+8)
+           img.draw_rectangle(roi, color=(90,0,0))
            segs = img.find_line_segments(roi=roi, merge_distance = 1, max_theta_diff = 5)
            for seg in segs:
                if  seg.length() > 20:
