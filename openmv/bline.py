@@ -22,12 +22,14 @@ file.close()
 sensor.reset()
 sensor.set_pixformat(fmt)
 sensor.set_framesize(res)
-sensor.set_brightness(-1)
-sensor.set_saturation(2)
+#sensor.set_brightness(0)
+#sensor.set_saturation(0)
 led1.on()
 sensor.skip_frames(time = 1500)
 led1.off()
 sensor.set_auto_whitebal(False)
+sensor.set_auto_gain(False)
+sensor.set_auto_exposure(False)
 
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
@@ -40,9 +42,43 @@ targetPacket = {"xc": 0, "yc": 0, "length": 0, "separation": 0}
 
 # Update threshold to allow auto gain/exposure changes:
 def computeThreshold(img):
-    #hist = img.get_histogram()
-    #return [(0,hist.get_percentile(0.04).l_value()),(0,0),(0,0)]
-    return [(0, 20, -5, 5, -5, 5)]
+    hist = img.get_histogram()
+    #return [(0,hist.get_percentile(0.2).l_value()),(-40,40),(-40,40)]
+    return [(0, 20), (-5,5), (-5,5)]
+
+#finding the score of potential line matches based on separation, angles, and y center points
+def score(la, lb):
+    cost = 0.0
+    if abs(la.x1() - lb.x1()) > 350: # too far
+        return 100000.0
+    if abs(la.x1() - lb.x1()) < 40:  # too close
+        return 100000.0
+
+    cost = cost + (abs(la.y1() - lb.y1()) * 2) # adds the difference on the vertical plane
+    cost = cost + (abs(la.length() - lb.length()) * 2)  # length
+    cost = cost + (abs(abs(la.x1() - lb.x1()) - abs(la.x2() - lb.x2())) * 2) #parallelism
+    print("cost %f" %cost)
+    return cost
+
+#finding lines that are the "best match" for eacher (at the right distance and angle)
+def bestMatch(ls, lmatch, li):
+    cost = 100000.0
+    best = -1
+    for lj in range(li+1, len(ls)):
+        if lmatch[lj] < 0:
+            s = score(ls[li], ls[lj])
+            if s < cost:
+                best = lj
+                #print("best %d" %best)
+                cost = s
+    return best
+
+# Search key allows ordering lines by x1:
+def x1(line):
+    return line.x1()
+
+# TODO: Insure line ordering
+
 
 # Initial threshold value from first picture:
 img = sensor.snapshot()
@@ -51,12 +87,8 @@ img = sensor.snapshot()
 thresh = computeThreshold(img)
 counter = 0
 
-searchroi = (0,int(sensor.height()*0.15),sensor.width(),int(sensor.height()*0.7))
-
-# Search key allows ordering lines by x1:
-def x1(line):
-    return line.x1()
-
+searchroi = (int(sensor.width()* 0.1),int(sensor.height()*0.15),
+             int(sensor.width()* 0.8),int(sensor.height()*0.7))
 
 
 # Main Loop:
@@ -64,64 +96,68 @@ while(True):
     startOfPacket["time"] = pyb.elapsed_millis(0)
     print(startOfPacket)
     img = sensor.snapshot()
+    #img.binary(thresh)
+
+
     if enable_lens_corr: img.lens_corr(1.8) # for 2.8mm lens...
 
     isActive = False
 
-    # Locate blobs to create a set of ROIs to use for line searching:
-    blobs = img.find_blobs(thresh, roi=searchroi, pixels_threshold=45, area_threshold=75,
-                           merge=True, margin=10)
-
-    # `merge_distance` controls the merging of nerby lines. At 0 (the
-    # default), no merging is done. At 1, any line 1 pixel away from
-    # another is merged... and so on as you increase this value. You
-    # may wish to merge lines as line segment detection produces a lot
-    # of line segment results.
-
-    # `max_theta_diff` controls the maximum amount of rotation
-    # difference between any two lines about to be merged. The default
-    # setting allows for 15 degrees.
-    linesegs = []
     if counter < 10:
         counter = counter + 1
     else:
         thresh = computeThreshold(img)
         counter = 0
 
+    # Locate blobs to create a set of ROIs to use for line searching:
+    blobs = img.find_blobs(thresh, roi=searchroi, pixels_threshold=50, area_threshold=70,
+                           merge=True, margin=5)
+
+    linesegs = []
+
     for b in blobs:
-        if b.area() < 15000:
+        if b.area() < 30000 and b.h() > (b.w() * 2):
             roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
-            img.draw_rectangle(roi, color=(90,0,0))
+            img.draw_rectangle(roi, color=(0,200,0))
             regLine = img.get_regression(thresh, roi=roi, pixels_threshold=40, area_threshold=40)
-            if regLine and (regLine.theta() > 165 or regLine.theta() < 15):
+            if regLine and (regLine.theta() > 150 or regLine.theta() < 30):
                 linesegs.append(regLine)
 
     # Now sort through our best "black lines" in x1 coordinate order:
-    linesegs = linesegs.sort(key=x1)
+    linesegs = sorted(linesegs, key=x1)
+    lmatch = [-1 for i in range(len(linesegs))]
 
     # Loop over all but last line.
     # Search for matches from this line onward, makes sure you don't compare
     # line to itself or create 'double answers'.
     if linesegs:
-        for l1 in range(0, len(linesegs) - 1):
-            for l2 in range(l1+1, len(linesegs)):
-                # Not the "double" line:
-                if abs(linesegs[l1].x1() - linesegs[l2].x1()) > 30:
-                    center = int((linesegs[l1].x1() + linesegs[l2].x1()) / 2.0)
-                    targetPacket["xc"] = center - sensor.width()/2
-                    targetPacket["yc"] = int((linesegs[l1].y1() + linesegs[l1].y2())/2.0)
-                    targetPacket["length"] = linesegs[l1].length()
-                    targetPacket["separation"] = abs(linesegs[l1].x1() - linesegs[l2].x1())
-                    img.draw_line((center,0,center,sensor.height()), color = (0,255,0))
-                    print(targetPacket)
-                    continue
+        for li in range(0, len(linesegs) - 1):
+            lmatch[li] = bestMatch(linesegs, lmatch, li)
+            if lmatch[li] != -1:
+                lmatch[lmatch[li]] = li
+                print("%d matched %d" %(li, lmatch[li]))
 
+    for l in range(0, len(lmatch)):
+        if lmatch[l] != -1:
+            la = linesegs[l]
+            lb = linesegs[lmatch[l]]
+            center = int((la.x1() + lb.x1()) / 2.0)
+            targetPacket["xc"] = center - sensor.width()/2
+            targetPacket["yc"] = int((la.y1() + la.y2())/2.0)
+            targetPacket["length"] = la.length()
+            targetPacket["separation"] = abs(la.x1() - lb.x1())
+            img.draw_line((center,0,center,sensor.height()), color = (0,255,0))
+            img.draw_line((la.x1(), int((la.y1()+la.y2())/2), lb.x1(), int((lb.y1()+lb.y2())/2)), color = (0,255,0))
+            print(targetPacket)
+            continue
 
-        for l in linesegs:
-            img.draw_line(l.line(), color = (255, 0, 0))
-            #print(l)
+    for l in linesegs:
+        img.draw_line(l.line(), color = (255, 255, 255))
+        #print(l)
 
     print(endOfPacket)
+    sensor.flush()
+    #sensor.skip_frames(time=25)
 
     if isActive:
         led2.on()
