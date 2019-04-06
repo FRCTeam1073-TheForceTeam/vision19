@@ -102,7 +102,7 @@ while(True):
 
     for l in linesegs:
         img.draw_line(l.line(), color = (255, 0, 0))
-        print(l)
+        #print(l)
 
     print(endOfPacket)
 

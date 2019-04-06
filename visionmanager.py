@@ -171,7 +171,7 @@ while True:
                         pass
                 
                 if len(cam[ci].data) > 0:
-                        if cam_mode[ci] == "lines":
+                        if cam_mode[cam[ci].get_id()] == "lines":
                                 data = []
                                 for line in cam[ci].data:
                                         data.append(line["x1"])
@@ -188,7 +188,7 @@ while True:
                                 nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
                         
-                        elif cam_mode[ci] == "wline":
+                        elif cam_mode[cam[ci].get_id()] == "wline":
                                 data = []
                                 for line in cam[ci].data:
                                         data.append(line["xc"])
@@ -203,9 +203,10 @@ while True:
                                 nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
 
-                        elif cam_mode[ci] == "bottomline":
+                        elif cam_mode[cam[ci].get_id()] == "bottomline":
                                 data = []
                                 for line in cam[ci].data:
+                                        #print("bottomline:", line)
                                         data.append(line["xc"])
                                         data.append(line["yc"])
                                         data.append(line["theta"])
@@ -218,12 +219,12 @@ while True:
                                 nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
 
-                        elif cam_mode[ci] == "bline":
+                        elif cam_mode[cam[ci].get_id()] == "bline":
                                 data = []
                                 for target in cam[ci].data:
+                                        #print("bline:", target)
                                         data.append(target["xc"])
                                         data.append(target["yc"])
-                                        data.append(target["theta"])
                                         data.append(target["length"])
                                         data.append(target["separation"])
                                 nt.putNumberArray("cam_%d_bline" %cam[ci].cam, data)
@@ -234,7 +235,7 @@ while True:
                                 nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
 
 
-                        elif cam_mode[ci] == "greentarget":
+                        elif cam_mode[cam[ci].get_id()] == "greentarget":
                                 data = []
                                 for blob in cam[ci].data:
                                         data.append(blob["tx"])
@@ -246,7 +247,7 @@ while True:
                                 nt.putNumberArray("cam_%d_wline" %cam[ci].cam, [])
                                 nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
 
-                        elif cam_mode[ci] == "video":
+                        elif cam_mode[cam[ci].get_id()] == "video":
                                 data = []
                                 nt.putNumberArray("cam_%d_video" %cam[ci].cam, data) 
                                 nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])                                        

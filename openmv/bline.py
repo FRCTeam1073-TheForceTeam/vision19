@@ -66,7 +66,7 @@ while(True):
     img = sensor.snapshot()
     if enable_lens_corr: img.lens_corr(1.8) # for 2.8mm lens...
 
-    isActive = False;
+    isActive = False
 
     # Locate blobs to create a set of ROIs to use for line searching:
     blobs = img.find_blobs(thresh, roi=searchroi, pixels_threshold=45, area_threshold=75,
@@ -103,7 +103,6 @@ while(True):
     # Search for matches from this line onward, makes sure you don't compare
     # line to itself or create 'double answers'.
     if linesegs:
-        print(linesegs)
         for l1 in range(0, len(linesegs) - 1):
             for l2 in range(l1+1, len(linesegs)):
                 # Not the "double" line:
