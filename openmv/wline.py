@@ -89,7 +89,7 @@ while(True):
             roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
             img.draw_rectangle(roi, color=(90,0,0))
             regLine = img.get_regression(thresh, roi=roi, pixels_threshold=40, area_threshold=40)
-            if regLine:
+            if regLine and (regLine.theta() > 130 or regLine.theta() < 50) and regLine.length() > 50:
                 center = int((regLine.x1() + regLine.x2()) / 2.0)
                 targetPacket["xc"] = center - sensor.width()/2
                 targetPacket["yc"] = int((regLine.y1()+regLine.y2())/2.0)
@@ -105,6 +105,7 @@ while(True):
         #print(l)
 
     print(endOfPacket)
+    sensor.flush()
 
     if isActive:
         led2.on()
