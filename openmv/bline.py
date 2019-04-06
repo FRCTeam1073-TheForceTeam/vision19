@@ -40,13 +40,13 @@ targetPacket = {"xc": 0, "yc": 0, "length": 0, "separation": 0}
 # Update threshold to allow auto gain/exposure changes:
 def computeThreshold(img):
     hist = img.get_histogram()
-    return [(0,hist.get_percentile(0.07).l_value()),(-20,20),(-20,20)]
+    return [(0,hist.get_percentile(0.06).l_value()),(-5, 5),(-5, 5)]
     #return [(0, 25), (-20,20), (-20,20)]
 
 #finding the score of potential line matches based on separation, angles, and y center points
 def score(la, lb):
     cost = 0.0
-    if abs(la.x1() - lb.x1()) > 350: # too far
+    if abs(la.x1() - lb.x1()) > 180: # too far
         return 100000.0
     if abs(la.x1() - lb.x1()) < 40:  # too close
         return 100000.0
@@ -88,8 +88,9 @@ img = sensor.snapshot()
 thresh = computeThreshold(img)
 
 # Set the region of the image that we will search:
-searchroi = (int(sensor.width()* 0.0),int(sensor.height()*0.15),
-             int(sensor.width()* 1.0),int(sensor.height()*0.7))
+#searchroi = (int(sensor.width()* 0.0),int(sensor.height()*0.15),
+#             int(sensor.width()* 1.0),int(sensor.height()*0.7))
+searchroi = (0, 100, 320, 120)
 
 counter = 0
 

@@ -95,6 +95,10 @@ while(True):
         img.draw_line(l.line(), color = (0, 255, 0))
         #print(l)
 
+    # Draw hatch lines
+    img.draw_line((100,215, 100, 240), color= (0,255,0))
+    img.draw_line((244,215, 244, 240), color= (0,255,0))
+
     print(endOfPacket)
     sensor.flush()
 
