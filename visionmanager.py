@@ -28,6 +28,8 @@ def give_script(mode):
                 return "./openmv/hatchfinder.py"
         elif mode == "video":
                 return "./openmv/video.py"
+        elif mode == "video2":
+                return "./openmv/video2.py"
                 
 def set_mode(cam, mode):
         script = ""
@@ -100,7 +102,7 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
 # Check for available camera ports:
 cam_names = []
 # Set predefined modes for the robot:
-cam_mode = ["bline", "wline", "bottomline", "video", "video", "video", "video"]
+cam_mode = ["bline", "wline", "video2", "video", "video", "video", "video"]
 
 for ii in range(0, 8):
         name = "/dev/ttyACM%d" % ii
@@ -164,16 +166,17 @@ httpdThread.start()
 loopCounter = 0
 while True:
         for ci in range(0,len(cam)):
+                cami = cam[ci].get_id()
                 try:
-                        cam[ci].processData()
-                        cam_frame[ci] = cam_frame[ci] + 1
+                        cam[cami].processData()
+                        cam_frame[cami] = cam_frame[cami] + 1
                 except:
                         pass
                 
-                if len(cam[ci].data) > 0:
-                        if cam_mode[cam[ci].get_id()] == "lines":
+                if len(cam[cami].data) > 0:
+                        if cam_mode[cami] == "lines":
                                 data = []
-                                for line in cam[ci].data:
+                                for line in cam[cami].data:
                                         data.append(line["x1"])
                                         data.append(line["y1"])
                                         data.append(line["x2"])
@@ -181,93 +184,103 @@ while True:
                                         data.append(line["theta"])
                                         data.append(line["magnitude"])
                                         data.append(line["length"])
-                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, data)
-                                nt.putNumberArray("cam_%d_wline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bottomline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_lineseg" %cami, data)
+                                nt.putNumberArray("cam_%d_wline" %cami, [])
+                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
+                                nt.putNumberArray("cam_%d_bline" %cami, [])
+                                nt.putNumberArray("cam_%d_greentarget" %cami, [])
+                                nt.putNumberArray("cam_%d_video" %cami, [])
                         
-                        elif cam_mode[cam[ci].get_id()] == "wline":
+                        elif cam_mode[cami] == "wline":
                                 data = []
-                                for line in cam[ci].data:
+                                for line in cam[cami].data:
                                         data.append(line["xc"])
                                         data.append(line["yc"])
                                         data.append(line["theta"])
                                         data.append(line["length"])
                                         data.append(line["area"])
-                                nt.putNumberArray("cam_%d_wline" %cam[ci].cam, data)
-                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bottomline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_wline" %cami, data)
+                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
+                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
+                                nt.putNumberArray("cam_%d_bline" %cami, [])
+                                nt.putNumberArray("cam_%d_greentarget" %cami, [])
+                                nt.putNumberArray("cam_%d_video" %cami, [])
 
-                        elif cam_mode[cam[ci].get_id()] == "bottomline":
+                        elif cam_mode[cami] == "bottomline":
                                 data = []
-                                for line in cam[ci].data:
+                                for line in cam[cami].data:
                                         #print("bottomline:", line)
                                         data.append(line["xc"])
                                         data.append(line["yc"])
                                         data.append(line["theta"])
                                         data.append(line["length"])
                                         data.append(line["area"])
-                                nt.putNumberArray("cam_%d_bottomline" %cam[ci].cam, data)
-                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_wline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_bottomline" %cami, data)
+                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
+                                nt.putNumberArray("cam_%d_wline" %cami, [])
+                                nt.putNumberArray("cam_%d_bline" %cami, [])
+                                nt.putNumberArray("cam_%d_greentarget" %cami, [])
+                                nt.putNumberArray("cam_%d_video" %cami, [])
 
-                        elif cam_mode[cam[ci].get_id()] == "bline":
+                        elif cam_mode[cami] == "bline":
                                 data = []
-                                for target in cam[ci].data:
-                                        #print("bline:", target)
+                                for target in cam[cami].data:
+                                        print("bline %d" %cami)
+                                        print("bline: ", target)
                                         data.append(target["xc"])
                                         data.append(target["yc"])
                                         data.append(target["length"])
                                         data.append(target["separation"])
-                                nt.putNumberArray("cam_%d_bline" %cam[ci].cam, data)
-                                nt.putNumberArray("cam_%d_bottomline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_wline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_bline" %cami, data)
+                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
+                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
+                                nt.putNumberArray("cam_%d_wline" %cami, [])
+                                nt.putNumberArray("cam_%d_greentarget" %cami, [])
+                                nt.putNumberArray("cam_%d_video" %cami, [])
 
 
-                        elif cam_mode[cam[ci].get_id()] == "greentarget":
+                        elif cam_mode[cami] == "greentarget":
                                 data = []
-                                for blob in cam[ci].data:
+                                for blob in cam[cami].data:
                                         data.append(blob["tx"])
                                         data.append(blob["trange"])
-                                nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, data)                                        
-                                nt.putNumberArray("cam_%d_bline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bottomline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_wline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_video" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_greentarget" %cami, data)                                        
+                                nt.putNumberArray("cam_%d_bline" %cami, [])
+                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
+                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
+                                nt.putNumberArray("cam_%d_wline" %cami, [])
+                                nt.putNumberArray("cam_%d_video" %cami, [])
 
-                        elif cam_mode[cam[ci].get_id()] == "video":
+                        elif cam_mode[cami] == "video":
                                 data = []
-                                nt.putNumberArray("cam_%d_video" %cam[ci].cam, data) 
-                                nt.putNumberArray("cam_%d_greentarget" %cam[ci].cam, [])                                        
-                                nt.putNumberArray("cam_%d_bline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_bottomline" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_lineseg" %cam[ci].cam, [])
-                                nt.putNumberArray("cam_%d_wline" %cam[ci].cam, [])
+                                nt.putNumberArray("cam_%d_video" %cami, data) 
+                                nt.putNumberArray("cam_%d_greentarget" %cami, [])                                        
+                                nt.putNumberArray("cam_%d_bline" %cami, [])
+                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
+                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
+                                nt.putNumberArray("cam_%d_wline" %cami, [])
 
-                nt.putString("cam_%d_status" %cam[ci].cam, "ok")
-                nt.putNumber("cam_%d_frame" %cam[ci].cam, cam_frame[ci])
-                nt.putNumber("cam_%d_width" %cam[ci].cam, cam[ci].width)
-                nt.putNumber("cam_%d_height" %cam[ci].cam, cam[ci].height)
+                        elif cam_mode[cami] == "video2":
+                                data = []
+                                nt.putNumberArray("cam_%d_video" %cami, data) 
+                                nt.putNumberArray("cam_%d_greentarget" %cami, [])                                        
+                                nt.putNumberArray("cam_%d_bline" %cami, [])
+                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
+                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
+                                nt.putNumberArray("cam_%d_wline" %cami, [])
 
-                newmode = nt.getString("cam_%d_mode" %cam[ci].cam, cam_mode[ci])
-                if newmode != cam_mode[ci]:
-                        cam_mode[ci] = newmode
-                        set_mode(cam[ci], cam_mode[ci])
+                nt.putString("cam_%d_status" %cami, "ok")
+                nt.putNumber("cam_%d_frame" %cami, cam_frame[cami])
+                nt.putNumber("cam_%d_width" %cami, cam[cami].width)
+                nt.putNumber("cam_%d_height" %cami, cam[cami].height)
+
+                newmode = nt.getString("cam_%d_mode" %cam[cami].cam, cam_mode[cami])
+                if newmode != cam_mode[cami]:
+                        cam_mode[cami] = newmode
+                        set_mode(cam[cami], cam_mode[cami])
                 
-                if cam[ci].get_ready():
-                        cam[ci].fb_update()
+                if cam[cami].get_ready():
+                        cam[cami].fb_update()
 
         if loopCounter %250 == 0:
                 for c in range(0, len(cam)):
