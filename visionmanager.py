@@ -187,7 +187,7 @@ while True:
                 if len(cam[ci].data) > 0:
                         if cam_mode[cami] == "lines":
                                 data = []
-                                for line in cam[cami].data:
+                                for line in cam[ci].data:
                                         data.append(line["x1"])
                                         data.append(line["y1"])
                                         data.append(line["x2"])
@@ -204,7 +204,7 @@ while True:
                         
                         elif cam_mode[cami] == "wline":
                                 data = []
-                                for line in cam[cami].data:
+                                for line in cam[ci].data:
                                         data.append(line["x1"])
                                         data.append(line["y1"])
                                         data.append(line["x2"])
@@ -221,7 +221,7 @@ while True:
 
                         elif cam_mode[cami] == "bottomline":
                                 data = []
-                                for line in cam[cami].data:
+                                for line in cam[ci].data:
                                         #print("bottomline:", line)
                                         data.append(line["xc"])
                                         data.append(line["yc"])
@@ -237,7 +237,7 @@ while True:
 
                         elif cam_mode[cami] == "bline":
                                 data = []
-                                for target in cam[cami].data:
+                                for target in cam[ci].data:
                                         #print("bline %d" %cami)
                                         #print("bline: ", target)
                                         data.append(target["xc"])
@@ -254,7 +254,7 @@ while True:
 
                         elif cam_mode[cami] == "greentarget":
                                 data = []
-                                for blob in cam[cami].data:
+                                for blob in cam[ci].data:
                                         data.append(blob["tx"])
                                         data.append(blob["trange"])
                                 nt.putNumberArray("cam_%d_greentarget" %cami, data)                                        
