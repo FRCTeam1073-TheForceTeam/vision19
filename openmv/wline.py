@@ -32,7 +32,7 @@ sensor.set_auto_whitebal(False)
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
-targetPacket = {"xc": 0, "yc": 0, "theta": 0, "length": 0, "area": 0}
+targetPacket = {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "theta": 0, "length": 0, "area": 0}
 
 # All lines also have `x1()`, `y1()`, `x2()`, and `y2()` methods to
 # get their end-points and a `line()` method to get all the above as
@@ -82,8 +82,10 @@ while(True):
             regLine = img.get_regression(thresh, roi=roi, pixels_threshold=40, area_threshold=40)
             if regLine and (regLine.theta() > 110 or regLine.theta() < 70) and regLine.length() > 30:
                 center = int((regLine.x1() + regLine.x2()) / 2.0)
-                targetPacket["xc"] = center - sensor.width()/2
-                targetPacket["yc"] = int((regLine.y1()+regLine.y2())/2.0)
+                targetPacket["x1"] = regline.x1()
+                targetPacket["y1"] = regline.y1()
+                targetPacket["x2"] = regline.x2()
+                targetPacket["y2"] = regline.y2()
                 targetPacket["theta"] = regLine.theta()
                 targetPacket["length"] = regLine.length()
                 targetPacket["area"] = b.area()

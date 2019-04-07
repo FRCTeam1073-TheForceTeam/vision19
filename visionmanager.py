@@ -200,8 +200,10 @@ while True:
                         elif cam_mode[cami] == "wline":
                                 data = []
                                 for line in cam[cami].data:
-                                        data.append(line["xc"])
-                                        data.append(line["yc"])
+                                        data.append(line["x1"])
+                                        data.append(line["y1"])
+                                        data.append(line["x2"])
+                                        data.append(line["y2"])
                                         data.append(line["theta"])
                                         data.append(line["length"])
                                         data.append(line["area"])
