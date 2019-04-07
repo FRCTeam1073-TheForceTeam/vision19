@@ -138,6 +138,7 @@ nt = NetworkTables.getTable("CameraFeedback")
 cam_frame = []
 
 print("RUNNING ID ON CAMERA DEVICES:")
+maxCamId = -1
 for ci in range(0,len(cam)):
         set_mode(cam[ci], "id")
         while cam[ci].get_id() < 0:
@@ -145,7 +146,11 @@ for ci in range(0,len(cam)):
                         cam[ci].processData()
                 except:
                         pass
-# Now each camera knows its ID
+
+        if maxCamId < cam[ci].get_id():
+                        maxCamId = cam[ci].get_id()
+                        
+# Now each camera knows its ID, deals with losing a cam0 for example
 
                 
 print("LOADED ALL CAMERA IDs:")
@@ -174,12 +179,12 @@ while True:
                 # Mapped camera index value:
                 cami = cam[ci].get_id()
                 try:
-                        cam[cami].processData()
-                        cam_frame[cami] = cam_frame[cami] + 1
+                        cam[ci].processData()
+                        cam_frame[ci] = cam_frame[ci] + 1
                 except:
                         pass
                 
-                if len(cam[cami].data) > 0:
+                if len(cam[ci].data) > 0:
                         if cam_mode[cami] == "lines":
                                 data = []
                                 for line in cam[cami].data:
@@ -278,17 +283,17 @@ while True:
                                 nt.putNumberArray("cam_%d_wline" %cami, [])
 
                 nt.putString("cam_%d_status" %cami, "ok")
-                nt.putNumber("cam_%d_frame" %cami, cam_frame[cami])
+                nt.putNumber("cam_%d_frame" %cami, cam_frame[ci])
                 nt.putNumber("cam_%d_width" %cami, cam[cami].width)
                 nt.putNumber("cam_%d_height" %cami, cam[cami].height)
 
-                newmode = nt.getString("cam_%d_mode" %cam[cami].cam, cam_mode[cami])
+                newmode = nt.getString("cam_%d_mode" %cami, cam_mode[cami])
                 if newmode != cam_mode[cami]:
                         cam_mode[cami] = newmode
-                        set_mode(cam[cami], cam_mode[cami])
+                        set_mode(cam[ci], cam_mode[cami])
                 
-                if cam[cami].get_ready():
-                        cam[cami].fb_update()
+                if cam[ci].get_ready():
+                        cam[ci].fb_update()
 
         if loopCounter %250 == 0:
                 for c in range(0, len(cam)):
