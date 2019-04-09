@@ -41,8 +41,8 @@ targetPacket = {"x1": 0, "y1": 0, "x2": 0, "y2": 0, "theta": 0, "length": 0, "ar
 # Update threshold to allow auto gain/exposure changes:
 def computeThreshold(img):
     hist = img.get_histogram()
-    return [(hist.get_percentile(0.97).l_value(),100),(0,0),(0,0)]
-#hist = [0. 0. 0. 0. 0 .0]
+#   return [(hist.get_percentile(0.97).l_value(),100),(0,0),(0,0)]
+    return [(90, 100), (-10, 10), (-10, 10)]
 
 # Initial threshold value from first picture:
 img = sensor.snapshot()
@@ -52,7 +52,7 @@ thresh = computeThreshold(img)
 counter = 0
 
 # Only search bottom portion of the image:
-searchroi = (0,int(sensor.height()*0.4),sensor.width(),int(sensor.height()*0.6))
+searchroi = (0,int(sensor.height()*0.0),sensor.width(),int(sensor.height()*0.4))
 
 
 # Main Loop:
@@ -65,7 +65,7 @@ while(True):
     isActive = False;
 
     # Locate blobs to create a set of ROIs to use for line searching:
-    blobs = img.find_blobs(thresh, roi=searchroi, pixels_threshold=45, area_threshold=75,
+    blobs = img.find_blobs(thresh, roi=searchroi, pixels_threshold=40, area_threshold=75,
                            merge=False, margin=10)
 
     linesegs = []
@@ -76,9 +76,10 @@ while(True):
         counter = 0
 
     for b in blobs:
-        if b.area() < 15000 and b.h() > b.w()*1.3:
+        #img.draw_rectangle(b.rect(), color=(0,255,0))
+        if b.area() < 10000 and b.h() > b.w()*1.3:
             roi = (b.x()-2, b.y()-2, b.w()+4, b.h()+4)
-            #img.draw_rectangle(roi, color=(90,0,0))
+            img.draw_rectangle(roi, color=(0,255,0))
             regLine = img.get_regression(thresh, roi=roi, pixels_threshold=40, area_threshold=40)
             if regLine and (regLine.theta() > 110 or regLine.theta() < 70) and regLine.length() > 30:
                 center = int((regLine.x1() + regLine.x2()) / 2.0)
@@ -98,8 +99,8 @@ while(True):
         #print(l)
 
     # Draw hatch lines
-    img.draw_line((100,215, 100, 240), color= (0,255,0))
-    img.draw_line((244,215, 244, 240), color= (0,255,0))
+    #img.draw_line((100,215, 100, 240), color= (0,255,0))
+    #img.draw_line((244,215, 244, 240), color= (0,255,0))
 
     print(endOfPacket)
     sensor.flush()

@@ -90,7 +90,7 @@ thresh = computeThreshold(img)
 # Set the region of the image that we will search:
 #searchroi = (int(sensor.width()* 0.0),int(sensor.height()*0.15),
 #             int(sensor.width()* 1.0),int(sensor.height()*0.7))
-searchroi = (0, 100, 320, 120)
+searchroi = (0, 100, 295, 120)
 
 counter = 0
 
