@@ -298,13 +298,13 @@ while True:
                 if cam[ci].get_ready():
                         cam[ci].fb_update()
 
-        if loopCounter % 100 == 0:
+        if loopCounter % 200 == 0:
                 for c in range(0, len(cam)):
                         if cam[c].get_ready():
                                 try:
                                         imgData = io.BytesIO()
                                         cam[c].get_image(imgData)
-                                        outf = open("./img_cam_%d_%d.jpeg" % (cam[c].get_id(), (loopCounter/250)), "wb")
+                                        outf = open("./img_cam_%d_%d.jpeg" % (cam[c].get_id(), (loopCounter/200)), "wb")
                                         outf.write(imgData.getvalue())
                                         outf.close()
                                 except:
