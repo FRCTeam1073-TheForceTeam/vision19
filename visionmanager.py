@@ -184,7 +184,7 @@ while True:
                 except:
                         pass
                 
-                if len(cam[ci].data) > 0:
+                if len(cam[ci].data) > 0 and cam_frame[ci] % 3 == 0:
                         if cam_mode[cami] == "lines":
                                 data = []
                                 for line in cam[ci].data:
@@ -282,20 +282,23 @@ while True:
                                 nt.putNumberArray("cam_%d_lineseg" %cami, [])
                                 nt.putNumberArray("cam_%d_wline" %cami, [])
 
-                nt.putString("cam_%d_status" %cami, "ok")
-                nt.putNumber("cam_%d_frame" %cami, cam_frame[ci])
-                nt.putNumber("cam_%d_width" %cami, cam[cami].width)
-                nt.putNumber("cam_%d_height" %cami, cam[cami].height)
+                if cam_frame[ci] % 3 == 0:
+                        nt.putString("cam_%d_status" %cami, "ok")
+                        nt.putNumber("cam_%d_frame" %cami, cam_frame[ci])
+                        nt.putNumber("cam_%d_width" %cami, cam[cami].width)
+                        nt.putNumber("cam_%d_height" %cami, cam[cami].height)
 
-                newmode = nt.getString("cam_%d_mode" %cami, cam_mode[cami])
-                if newmode != cam_mode[cami]:
-                        cam_mode[cami] = newmode
-                        set_mode(cam[ci], cam_mode[cami])
+                        newmode = nt.getString("cam_%d_mode" %cami,
+                                               cam_mode[cami])
+
+                        if newmode != cam_mode[cami]:
+                                cam_mode[cami] = newmode
+                                set_mode(cam[ci], cam_mode[cami])
                 
                 if cam[ci].get_ready():
                         cam[ci].fb_update()
 
-        if loopCounter %250 == 0:
+        if loopCounter % 100 == 0:
                 for c in range(0, len(cam)):
                         if cam[c].get_ready():
                                 try:
