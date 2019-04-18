@@ -201,7 +201,7 @@ while True:
 #                                nt.putNumberArray("cam_%d_bline" %cami, [])
 #                                nt.putNumberArray("cam_%d_greentarget" %cami, [])
 #                                nt.putNumberArray("cam_%d_video" %cami, [])
-                        
+
                         elif cam_mode[cami] == "wline":
                                 data = []
                                 for line in cam[ci].data:
@@ -244,7 +244,7 @@ while True:
                                         data.append(target["yc"])
                                         data.append(target["length"])
                                         data.append(target["separation"])
-#                                nt.putNumberArray("cam_%d_bline" %cami, data)
+                                nt.putNumberArray("cam_%d_bline" %cami, data)
 #                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
 #                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
 #                                nt.putNumberArray("cam_%d_wline" %cami, [])
