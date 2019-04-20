@@ -34,7 +34,7 @@ led1.off()
 # Set Up Packets:
 startOfPacket = { "cam": cam, "time": pyb.elapsed_millis(0), "fmt": fmt, "height": sensor.height(), "width": sensor.width()}
 endOfPacket = { "end": 0}
-targetPacket = {"xc": 0, "yc": 0, "length": 0, "separation": 0}
+targetPacket = {"xc": 0, "yc": 0, "length": 0, "separation": 0, "score": 0}
 
 
 # Update threshold to allow auto gain/exposure changes:
@@ -64,7 +64,7 @@ def bestMatch(ls, lmatch, li):
     cost = 100000.0
     best = -1
     for lj in range(li+1, len(ls)):
-        if lmatch[lj] < 0:
+        if lmatch[lj][0] < 0:
             s = score(ls[li], ls[lj])
             if s < cost:
                 best = lj
@@ -72,9 +72,9 @@ def bestMatch(ls, lmatch, li):
                 cost = s
 
     if cost > 300:
-        return -1
+        return (-1, 10000)
     else:
-        return best
+        return (best, cost)
 
 # Search key allows ordering lines by x1:
 def x1(line):
@@ -129,7 +129,7 @@ while(True):
 
     # Now sort through our best "black lines" in x1 coordinate order:
     linesegs = sorted(linesegs, key=x1)
-    lmatch = [-1 for i in range(len(linesegs))]
+    lmatch = [(-1, 10000) for i in range(len(linesegs))]
 
     # Loop over all but last line.
     # Search for matches from this line onward, makes sure you don't compare
@@ -137,26 +137,27 @@ while(True):
     if linesegs:
         for li in range(0, len(linesegs) - 1):
             lmatch[li] = bestMatch(linesegs, lmatch, li)
-            lmatch[lmatch[li]] = li
+            lmatch[lmatch[li][0]] = lmatch[li]
             #print("%d matched %d" %(li, lmatch[li]))
 
     #print(linesegs)
     #print(lmatch)
 
     for l in range(0, len(lmatch)):
-        if lmatch[l] != -1:
+        if lmatch[l][0] != -1:
             la = linesegs[l]
-            lb = linesegs[lmatch[l]]
+            lb = linesegs[lmatch[l][0]]
             center = int((la.x1() + lb.x1()) / 2.0)
             targetPacket["xc"] = center - sensor.width()/2
             targetPacket["yc"] = int((la.y1() + la.y2())/2.0)
             targetPacket["length"] = la.length()
             targetPacket["separation"] = abs(la.x1() - lb.x1())
+            targetPacket["score"] = lmatch[l][1]
             img.draw_line((center,0,center,sensor.height()), color = (0,255,0))
             img.draw_line((la.x1(), int((la.y1()+la.y2())/2), lb.x1(), int((lb.y1()+lb.y2())/2)), color = (0,255,0))
             print(targetPacket)
-            lmatch[l] = -1
-            lmatch[lmatch[l]] = -1
+            lmatch[l] = (-1, 10000)
+            lmatch[lmatch[l][0]] = (-1, 10000)
             continue
 
     for l in linesegs:

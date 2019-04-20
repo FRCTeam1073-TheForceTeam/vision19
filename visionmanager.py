@@ -183,14 +183,15 @@ while True:
                 # Mapped camera index value:
                 cami = cam[ci].get_id()
                 try:
-                        cam[ci].processData()
-                        cam_frame[ci] = cam_frame[ci] + 1
+                        cam[cami].processData()
+                        cam_frame[cami] = cam_frame[cami] + 1
                 except:
                         pass
 
                 if cam_mode[cami] == "wline":
                         data = []
-                        for line in cam[ci].data:
+                        newCamData = cam[cami].readNewData()
+                        for line in newCamData:
                                 data.append(line["x1"])
                                 data.append(line["y1"])
                                 data.append(line["x2"])
@@ -209,7 +210,8 @@ while True:
 
                 elif cam_mode[cami] == "bline":
                         data = []
-                        for target in cam[ci].data:
+                        newCamData = cam[cami].readNewData()
+                        for target in newCamData:
                                 #print("bline %d" %cami)
                                 #print("bline: ", target)
                                 data.append(target["xc"])

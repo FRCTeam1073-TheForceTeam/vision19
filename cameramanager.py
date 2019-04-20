@@ -54,6 +54,8 @@ class CameraManager:
         self.waitingForCycle = True
         self.firstPacket = True
         self.data = []
+        self.newdata = []
+        self.dataIsNew = False
         self.width = 0
         self.height = 0
         self.packetBuffer = bytearray(1000)
@@ -204,6 +206,13 @@ class CameraManager:
         self.__serial.write(struct.pack("<BBI", CameraManager.__USBDBG_CMD, CameraManager.__USBDBG_ARCH_STR, 64))
         return self.__serial.read(64).split('\0', 1)[0]
 
+    def readNewData(self):
+        if self.dataIsNew == True:
+            return self.data
+            self.dataIsNew = False
+        else:
+            return []
+        
     def parseBuffer(self, buffer):
         #print(buffer)
         if self.firstPacket:
@@ -223,14 +232,16 @@ class CameraManager:
                 self.fmt = packet['fmt']
                 self.timestamp = packet['time']
                 self.waitingForCycle = False
-                self.data = []
+                self.newdata = []
                 self.ready = True
         else:
             packet = eval(buffer)
             if 'end' in packet:
                 self.waitingForCycle = True
+                self.data = self.newdata
+                self.dataIsNew = True
             else:
-                self.data.append(packet)
+                self.newdata.append(packet)
         return True
 
 

@@ -19,9 +19,7 @@ dataEnable = table.getEntry("data_enable")
 
 if sys.argv[2] == "True":
     dataEnable.setBoolean(True)
-    print("setting true")
 else:
     dataEnable.setBoolean(False)
-    print("Setting false")
     
 time.sleep(0.3)
