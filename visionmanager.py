@@ -168,8 +168,17 @@ httpdThread.start()
 # TOP OF LOOP
 loopCounter = 0
 sendNTables = True
+disableCounter = 0
+
 while True:
-        sendNTables = nt.getBoolean("data_enable", True)
+        tempSendNTables = nt.getBoolean("data_enable", True)
+        if tempSendNTables == False and sendNTables == True:
+                disableCounter = 5
+        elif tempSendNTables == True:
+                disableCounter = 0
+                
+        sendNTables = tempSendNTables
+        
         for ci in range(0,len(cam)):
                 # Mapped camera index value:
                 cami = cam[ci].get_id()
@@ -234,6 +243,10 @@ while True:
                         pass
 
 
+                if disableCounter > 0:
+                        nt.putNumberArray("cam_%d_bline" %cami, [])
+                        nt.putNumberArray("cam_%d_wline" %cami, [])
+                        disableCounter = disableCounter - 1
                 if cam[ci].get_ready():
                         cam[ci].fb_update()
 
