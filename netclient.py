@@ -14,18 +14,11 @@ NetworkTables.initialize(server=ip)
 
 table = NetworkTables.getTable("CameraFeedback")
 
-if len(sys.argv) > 2:
-    table.putString("cam_0_mode", sys.argv[2])
-
 while True:
-    print("cam_0_frame", table.getNumber("cam_0_frame", -1))
-    print("cam_0_mode", table.getString("cam_0_mode", "<no mode>"))
-    print("cam_0_width", table.getNumber("cam_0_width", -1))
-    print("cam_0_height", table.getNumber("cam_0_height", -1))
-    print("cam_0_status", table.getString("cam_0_status", "<no status>"))
-    lineseg = table.getNumberArray("cam_0_lineseg", [])
-    blobs = table.getNumberArray("cam_0_blobs",[])
-    if len(lineseg) > 0:
-        print("cam_0_lineseg", lineseg)
-    if len(blobs) > 0:
-        print("cam_0_blobs", blobs)
+    print("cam_0_bline")
+    print(table.getNumberArray("cam_0_bline", [-1]))
+    print("cam_1_wline")
+    print(table.getNumberArray("cam_1_wline", [-1]))
+    print("data_enable")
+    print(table.getBoolean("data_enable", False))
+    time.sleep(0.3)

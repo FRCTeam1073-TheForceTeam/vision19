@@ -51,9 +51,11 @@ def score(la, lb):
     if abs(la.x1() - lb.x1()) < 40:  # too close
         return 100000.0
 
-    cost = cost + (abs(la.y1() - lb.y1()) * 20) # adds the difference on the vertical plane
+    cost = cost + (abs(la.y1() - lb.y1()) * 40) # adds the difference on the vertical plane
     cost = cost + (abs(la.length() - lb.length()) * 5)  # length
     cost = cost + (abs(abs(la.x1() - lb.x1()) - abs(la.x2() - lb.x2())) * 2) #parallelism
+    cost = cost + (abs(lb.x1() - la.x1()) * 1.5) # nearer line finder
+
     #print("cost %f" %cost)
     return cost
 
@@ -69,7 +71,7 @@ def bestMatch(ls, lmatch, li):
                 #print("best %d" %best)
                 cost = s
 
-    if cost > 400:
+    if cost > 300:
         return -1
     else:
         return best
