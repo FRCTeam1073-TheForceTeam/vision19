@@ -12,7 +12,6 @@ import threading
 from PIL import Image
 
 
-
 def give_script(mode):
         if mode == "id":
                 return "./openmv/id.py"
@@ -55,34 +54,52 @@ class ImageHandler(http.server.BaseHTTPRequestHandler):
                                 fdata.close()
                                 self.wfile.write(bytes(testpage, 'utf-8'))
                                 return
-                                
-                        ci = -1
-                        camnum = basepath[0]
-                        ci = int(camnum[1])
+                        
+                        else:
+                                ci = -1
+                                camnum = basepath[0]
+                                ci = int(camnum[1])
 
-                        if ci >= 0:
-                                imgData = io.BytesIO()
-                                for jj in range(0, len(cam)):
-                                        if cam[jj].get_id() == ci and cam[jj].get_ready():
-                                               # print(">")
-                                                cam[jj].get_image(imgData)
-                                               # print("<")
-                                                self.send_response(200)
+                                if ci >= 0:
+                                        imgData = io.BytesIO()
+                                        for jj in range(0, len(cam)):
+                                                if cam[jj].get_id() == ci and cam[jj].get_ready() == True:
+                                                        # print("get dev %d id %d" % (jj, cam[jj].get_id()))
+                                                        try:
+                                                                counter = 0
+                                                                while cam[jj].get_image(imgData) == False and counter < 15:
+                                                                        time.sleep(0.009)
+                                                                        counter = counter + 1
+                                                                
+                                                                if counter >= 15:
+#                                                                        print("<x>")
+                                                                        self.send_response(404)
+                                                                        return
+                                                        
+                                                                else:
+                                                                        self.send_response(200)
+                                                                        
+                                                                        self.send_header('Content-Type','image/jpeg')
+                                                                        self.send_header('Content-Length', imgData.tell())
+                                                                        self.send_header('Cache Control', 'no-cache')
+                                                                        self.end_headers()
+                                                                        self.wfile.write(imgData.getvalue())
+                                                                        return
+                                                        except:
+                                                                print("Image send exception %d id %d" % (jj, cam[jj].get_id()))
+                                                                self.send_response(404)
+                                                                return
 
-                                                self.send_header('Content-Type','image/jpeg')
-                                                self.send_header('Content-Length', imgData.tell())
-                                                self.send_header('Cache Control', 'no-cache')
-                                                self.end_headers()
-                                                self.wfile.write(imgData.getvalue())
-                                                return
 
+                                else:
+                                        self.send_response(404)
+                                        return
 
-                        self.send_response(404)
-                        return
                 except:
                         print("Web handler exception.")
                         self.send_response(404)
                         return
+
 
         # This stops it spewing output all the time.
         def log_message(self, format, *args):
@@ -145,7 +162,7 @@ for ci in range(0,len(cam)):
 # Now each camera knows its ID, deals with losing a cam0 for example
 
                 
-print("LOADED ALL CAMERA IDs:")
+print("LOADED ALL %d CAMERA IDs:" % len(cam))
 for ci in range(0, len(cam)):
         print("Cam device %s with ID = %d"%(cam_devices[ci], cam[ci].get_id()))
                 
@@ -156,7 +173,7 @@ for ci in range(0,len(cam)):
         print("Cam ID %d mode: %s"%(cami, cam_mode[cami]))
         set_mode(cam[ci], cam_mode[cami])
         cam_frame.append(0)
-        nt.putString("cam_%d_mode" %cami, cam_mode[cami])
+        nt.putString("cam_%d_mode" % cami, cam_mode[cami])
 
 # create image webserver running on separate thread:
 server_address = ('', int(videoPort))
@@ -170,6 +187,8 @@ loopCounter = 0
 sendNTables = True
 disableCounter = 0
 
+print("Length of CAM array %d" % len(cam))
+
 while True:
         tempSendNTables = nt.getBoolean("data_enable", True)
         if tempSendNTables == False and sendNTables == True:
@@ -179,18 +198,35 @@ while True:
                 
         sendNTables = tempSendNTables
         
-        for ci in range(0,len(cam)):
+        for ci in range(0, len(cam)):
                 # Mapped camera index value:
                 cami = cam[ci].get_id()
+                
                 try:
+#                        print("Process Data dev %d id %d" %(ci, cami))
                         cam[ci].processData()
                         cam_frame[ci] = cam_frame[ci] + 1
                 except:
-                        pass   
+                        print("Exception:Cam dev %d id %d failed process data" %(ci, cami))
 
+                if cam[ci].get_ready() == True:
+                        try:
+                                tcounter = 0
+                                while cam[ci].fb_update() == False and tcounter < 5:
+                                        tcounter = tcounter + 1
+                                        time.sleep(0.011)
+
+                                if tcounter >=5:
+                                        print(">?<")
+                                        
+#                                print("FB update: %d" % ci)
+                        except:
+                                print("FP update exception: dev %d, id %d"%(ci,cami))
+
+                        
                 if cam_mode[cami] == "wline":
                         data = []
-                        newCamData = cam[cami].readNewData()
+                        newCamData = cam[ci].readNewData()
                         for line in newCamData:
                                 data.append(line["x1"])
                                 data.append(line["y1"])
@@ -199,6 +235,7 @@ while True:
                                 data.append(line["theta"])
                                 data.append(line["length"])
                                 data.append(line["area"])
+                                
                         if sendNTables == True:
                                 nt.putNumberArray("cam_%d_wline" %cami, data)
 #                                nt.putNumberArray("cam_%d_lineseg" %cami, [])
@@ -210,7 +247,7 @@ while True:
 
                 elif cam_mode[cami] == "bline":
                         data = []
-                        newCamData = cam[cami].readNewData()
+                        newCamData = cam[ci].readNewData()
                         for target in newCamData:
                                 #print("bline %d" %cami)
                                 #print("bline: ", target)
@@ -218,6 +255,7 @@ while True:
                                 data.append(target["yc"])
                                 data.append(target["length"])
                                 data.append(target["separation"])
+                                
                         if sendNTables == True:
                                 nt.putNumberArray("cam_%d_bline" %cami, data)
 #                                nt.putNumberArray("cam_%d_bottomline" %cami, [])
@@ -236,35 +274,10 @@ while True:
 #                        nt.putNumberArray("cam_%d_lineseg" %cami, [])
 #                        nt.putNumberArray("cam_%d_wline" %cami, [])
 
-        if cam_frame[ci] % 3 == 0:
-#               nt.putString("cam_%d_status" %cami, "ok")
-#               nt.putNumber("cam_%d_frame" %cami, cam_frame[ci])
-#               nt.putNumber("cam_%d_width" %cami, cam[cami].width)
-#               nt.putNumber("cam_%d_height" %cami, cam[cami].height)
-
-                pass
-
 
         if disableCounter > 0:
                 nt.putNumberArray("cam_%d_bline" %cami, [])
                 nt.putNumberArray("cam_%d_wline" %cami, [])
                 disableCounter = disableCounter - 1
-                        
-        if cam[ci].get_ready():     
-                cam[ci].fb_update()
-                        
 
-        if False:
-                for c in range(0, len(cam)):
-                        if cam[c].get_ready():
-                                try:
-                                        imgData = io.BytesIO()
-                                        cam[c].get_image(imgData)
-                                        outf = open("./img_cam_%d_%d.jpeg" % (cam[c].get_id(), (loopCounter/200)), "wb")
-                                        outf.write(imgData.getvalue())
-                                        outf.close()
-                                except:
-                                        pass
-
-                                  
         loopCounter = loopCounter + 1

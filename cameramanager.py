@@ -64,6 +64,8 @@ class CameraManager:
         self.cam = -1
         self.ready = False
         self.image = None
+        self.looking = False
+        self.reading = False
 
     def disconnect(self):
         try:
@@ -77,7 +79,10 @@ class CameraManager:
         return self.cam
 
     def get_ready(self):
-        return self.ready
+        self.lock.acquire()
+        ready = self.ready
+        self.lock.release()
+        return ready
 
     def set_timeout(self, timeout):
         self.__serial.timeout = timeout
@@ -88,22 +93,54 @@ class CameraManager:
         return struct.unpack("III", self.__serial.read(12))
 
     def fb_update(self):
-        self.lock.acquire()
-        fb = self.fb_dump()
-        if fb != None:
-            self.image = Image.fromarray(fb[2])
-    
-        self.lock.release()
+        try:
+            doIt = False
+            self.lock.acquire()
+            self.looking = True
+            if self.reading == False:
+                doIt = True
+            else:
+                self.looking = False
+            self.lock.release()
+
+            if doIt == True:
+                fb = self.fb_dump()
+                if fb != None:
+                    self.image = Image.fromarray(fb[2])
+                
+            self.lock.acquire()
+            self.looking = False
+            self.lock.release()
+            return doIt
+        except:
+            self.looking = False
+            self.lock.release()
+            return False
+
 
     def get_image(self, buffer):
         try:
+            doIt = False
             self.lock.acquire()
-            if self.image:
-                self.image.save(buffer, format = "JPEG")
+            self.reading = True
+            if self.looking == False:
+                doIt = True
+            else:
+                self.reading = False
             self.lock.release()
+            
+            if doIt == True and self.image:
+                    self.image.save(buffer, format = "JPEG")
+
+            self.lock.acquire()
+            self.reading = False
+            self.lock.release()
+            return doIt
         except:
-            self.lock.release()
+            self.reading = False
+            return False
         
+                    
     def fb_dump(self):
         size = self.fb_size()
 
@@ -143,9 +180,11 @@ class CameraManager:
         return (size[0], size[1], buff.reshape((size[1], size[0], 3)))
 
     def exec_script(self, buf):
+        self.lock.acquire()
         self.ready = False
         self.__serial.write(struct.pack("<BBI", CameraManager.__USBDBG_CMD, CameraManager.__USBDBG_SCRIPT_EXEC, len(buf)))
         self.__serial.write(buf.encode())
+        self.lock.release()
 
     def stop_script(self):
         self.__serial.write(struct.pack("<BBI", CameraManager.__USBDBG_CMD, CameraManager.__USBDBG_SCRIPT_STOP, 0))
@@ -233,7 +272,9 @@ class CameraManager:
                 self.timestamp = packet['time']
                 self.waitingForCycle = False
                 self.newdata = []
+                self.lock.acquire()
                 self.ready = True
+                self.lock.release()
         else:
             packet = eval(buffer)
             if 'end' in packet:
