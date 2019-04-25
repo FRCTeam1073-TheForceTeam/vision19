@@ -183,10 +183,10 @@ while True:
                 # Mapped camera index value:
                 cami = cam[ci].get_id()
                 try:
-                        cam[cami].processData()
-                        cam_frame[cami] = cam_frame[cami] + 1
+                        cam[ci].processData()
+                        cam_frame[ci] = cam_frame[ci] + 1
                 except:
-                        pass
+                        pass   
 
                 if cam_mode[cami] == "wline":
                         data = []
@@ -236,21 +236,23 @@ while True:
 #                        nt.putNumberArray("cam_%d_lineseg" %cami, [])
 #                        nt.putNumberArray("cam_%d_wline" %cami, [])
 
-                if cam_frame[ci] % 3 == 0:
-#                        nt.putString("cam_%d_status" %cami, "ok")
-#                        nt.putNumber("cam_%d_frame" %cami, cam_frame[ci])
-#                        nt.putNumber("cam_%d_width" %cami, cam[cami].width)
-#                        nt.putNumber("cam_%d_height" %cami, cam[cami].height)
+        if cam_frame[ci] % 3 == 0:
+#               nt.putString("cam_%d_status" %cami, "ok")
+#               nt.putNumber("cam_%d_frame" %cami, cam_frame[ci])
+#               nt.putNumber("cam_%d_width" %cami, cam[cami].width)
+#               nt.putNumber("cam_%d_height" %cami, cam[cami].height)
 
-                        pass
+                pass
 
 
-                if disableCounter > 0:
-                        nt.putNumberArray("cam_%d_bline" %cami, [])
-                        nt.putNumberArray("cam_%d_wline" %cami, [])
-                        disableCounter = disableCounter - 1
-                if cam[ci].get_ready():
-                        cam[ci].fb_update()
+        if disableCounter > 0:
+                nt.putNumberArray("cam_%d_bline" %cami, [])
+                nt.putNumberArray("cam_%d_wline" %cami, [])
+                disableCounter = disableCounter - 1
+                        
+        if cam[ci].get_ready():     
+                cam[ci].fb_update()
+                        
 
         if False:
                 for c in range(0, len(cam)):
